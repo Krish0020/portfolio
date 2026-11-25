@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="orbital">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Krish Tiwari — Game Developer, Designer &amp; Frontend Engineer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================
+       1. DESIGN TOKENS & SIGNAL MODES
+       ========================================= */
+    :root {
+      --bg: #05060a;
+      --bg-elevated: rgba(12, 15, 24, 0.75);
+      --surface: rgba(18, 22, 34, 0.62);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: rgba(255, 255, 255, 0.22);
+      --text: #f3f5f9;
+      --text-muted: #939bb0;
+      --accent: #38bdf8;
+      --accent-2: #a855f7;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --gold: #eab308;
+      --success: #10b981;
+      --danger: #ef4444;
+      --font-display: 'Syne', sans-serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 18px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    [data-mode="signal"] {
+      --bg: #070304;
+      --bg-elevated: rgba(18, 7, 9, 0.8);
+      --surface: rgba(26, 10, 14, 0.65);
+      --accent: #ef4444;
+      --accent-2: #f97316;
+      --accent-glow: rgba(239, 68, 68, 0.3);
+    }
+
+    /* =========================================
+       2. BASE & WEBGL CANVAS
+       ========================================= */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+      transition: background 0.6s var(--ease);
+    }
+
+    #orbital-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .grain-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.6) 0.5px, transparent 0.5px);
+      background-size: 3px 3px;
+    }
+
+    [data-mode="signal"] .grain-overlay {
+      opacity: 0.085;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.14) 0px,
+        rgba(255, 255, 255, 0.14) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+
+    .cursor-glow {
+      position: fixed;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    main, header, footer {
+      position: relative;
+      z-index: 2;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(92%, 1180px);
+      margin: 0 auto;
+    }
+
+    section {
+      padding: 105px 0;
+    }
+
+    /* =========================================
+       3. SCROLL PROGRESS & HUD
+       ========================================= */
+    .scroll-track {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      z-index: 1000;
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    .telemetry-hud {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .hud-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+
+    /* =========================================
+       4. NAVIGATION BAR
+       ========================================= */
+    header {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(92%, 1180px);
+      z-index: 100;
+      background: var(--bg-elevated);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0 22px;
+    }
+
+    .nav-inner {
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-dot {
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 26px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      transition: color 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .mode-pill:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 18px var(--accent-glow);
+    }
+
+    .menu-btn {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      place-items: center;
+    }
+
+    /* =========================================
+       5. TYPOGRAPHY & REVEAL
+       ========================================= */
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4.2vw, 3.1rem);
+      line-height: 1.08;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .section-sub {
+      max-width: 440px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================================
+       6. HERO SECTION
+       ========================================= */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 120px;
+      padding-bottom: 60px;
+    }
+
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6.5vw, 5.1rem);
+      font-weight: 800;
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .outline-text {
+      color: transparent;
+      -webkit-text-stroke: 1.2px var(--border-strong);
+      transition: -webkit-text-stroke 0.3s ease;
+    }
+
+    .hero h1:hover .outline-text {
+      -webkit-text-stroke: 1.4px var(--accent);
+    }
+
+    .role-scramble {
+      font-family: var(--font-mono);
+      font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+      color: var(--accent);
+      margin-bottom: 22px;
+      min-height: 28px;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 560px;
+      margin-bottom: 34px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 24px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 10px 30px var(--accent-glow);
+    }
+
+    .btn-horror {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      color: #fff;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.35);
+    }
+
+    .btn-horror:hover {
+      box-shadow: 0 14px 38px rgba(239, 68, 68, 0.55);
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+    }
+
+    .orbital-spec-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .spec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.86rem;
+    }
+
+    .spec-row:last-of-type { border-bottom: none; }
+    .spec-key { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.78rem; }
+    .spec-val { font-weight: 600; text-align: right; }
+
+    .orb-controls {
+      margin-top: 18px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip-btn {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 6px 11px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip-btn.active,
+    .chip-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* =========================================
+       7. UPGRADED INTERACTIVE PROJECT SHOWCASES
+       ========================================= */
+    .filter-strip {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .filter-pill {
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .filter-pill.active,
+    .filter-pill:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .projects-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 26px;
+    }
+
+    .project-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.35s ease, transform 0.35s var(--ease), box-shadow 0.35s ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .project-card.hidden {
+      display: none;
+    }
+
+    /* FEATURED FULL-WIDTH HORROR SPOTLIGHT FOR NULL SIGNAL */
+    .featured-horror-card {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: linear-gradient(135deg, rgba(16, 6, 8, 0.9), rgba(8, 8, 14, 0.88));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .featured-horror-card:hover {
+      border-color: rgba(239, 68, 68, 0.78);
+      box-shadow: 0 25px 70px rgba(239, 68, 68, 0.16);
+    }
+
+    /* Interactive Flashlight Horror Canvas Stage */
+    .horror-stage {
+      position: relative;
+      min-height: 360px;
+      background: #030102;
+      overflow: hidden;
+      cursor: crosshair;
+      border-right: 1px solid rgba(239, 68, 68, 0.22);
+    }
+
+    #horrorCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .horror-hud-top {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: rgba(248, 113, 113, 0.92);
+      pointer-events: none;
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+
+    .rec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .rec-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blinkRec 1s infinite;
+    }
+
+    @keyframes blinkRec {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0.15; }
+    }
+
+    .horror-hud-bottom {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .flashlight-hint {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.72);
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    #waveCanvas {
+      width: 150px;
+      height: 36px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .featured-horror-info {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .horror-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #f87171;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .horror-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 3vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+
+    .horror-hook {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      color: #fca5a5;
+      border-left: 2px solid #ef4444;
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+
+    .project-desc {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 18px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 22px;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* =========================================
+       LIVE MINI UI PREVIEWS FOR WEB PROJECTS
+       ========================================= */
+    .ui-preview-stage {
+      height: 235px;
+      background: #070b14;
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .browser-frame {
+      flex: 1;
+      background: #0c1220;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      transition: transform 0.35s var(--ease);
+    }
+
+    .project-card:hover .browser-frame {
+      transform: translateY(-4px) scale(1.015);
+    }
+
+    .browser-top {
+      height: 26px;
+      background: #11192c;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+
+    .b-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .b-url {
+      margin-left: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.35);
+      padding: 2px 8px;
+      border-radius: 4px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Mini Admin Dashboard Layout */
+    .mini-dash-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    .mini-sidebar {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mini-nav-item {
+      height: 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .mini-nav-item.active {
+      background: var(--accent);
+    }
+
+    .mini-dash-main {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mini-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .mini-kpi {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 6px;
+      padding: 6px;
+    }
+
+    .mini-kpi span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .mini-kpi small {
+      display: block;
+      font-size: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    .mini-chart-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .mini-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(180deg, var(--accent), rgba(56, 189, 248, 0.2));
+      transition: height 0.45s var(--ease);
+    }
+
+    .project-card:hover .mini-bar:nth-child(odd) {
+      filter: brightness(1.25);
+    }
+
+    /* Mini Ruhyaa Multi-Device UI Preview */
+    .ruhyaa-stage {
+      display: grid;
+      grid-template-columns: 1fr 78px;
+      gap: 12px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .mini-web-hero {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .wire-pill {
+      width: 48px;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(168, 85, 247, 0.65);
+    }
+
+    .wire-title {
+      width: 78%;
+      height: 12px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .wire-sub {
+      width: 58%;
+      height: 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .wire-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .wire-card {
+      height: 36px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.14);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+
+    .mini-phone {
+      height: 162px;
+      background: #0d111d;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+      transition: transform 0.35s var(--ease);
+    }
+
+    .project-card:hover .mini-phone {
+      transform: translateY(-6px) rotate(2deg);
+    }
+
+    .phone-notch {
+      width: 24px;
+      height: 4px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.25);
+      margin: 0 auto 4px;
+    }
+
+    .project-content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .project-cat-mini {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .project-title {
+      font-family: var(--font-display);
+      font-size: 1.32rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .card-link {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-link:hover {
+      text-decoration: underline;
+    }
+
+    /* =========================================
+       8. EXPERIENCE & ENGRAVED CREDENTIALS
+       ========================================= */
+    .exp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .timeline-card,
+    .cert-card {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color 0.3s ease, transform 0.3s var(--ease);
+    }
+
+    .timeline-card:hover,
+    .cert-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .timeline-meta {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .timeline-role {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .timeline-org {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .bullet-list li {
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .bullet-list li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .certs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .cert-card {
+      border-color: rgba(234, 179, 8, 0.28);
+      background: linear-gradient(145deg, rgba(24, 24, 32, 0.8), rgba(14, 14, 20, 0.9));
+    }
+
+    .cert-seal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      background: rgba(234, 179, 8, 0.08);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    .cert-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .cert-details {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .cert-id {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      word-break: break-all;
+      margin-bottom: 14px;
+    }
+
+    /* =========================================
+       9. SKILLS DIAGNOSTICS PANEL
+       ========================================= */
+    .diag-panel {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .diag-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 26px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .skill-node {
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .skill-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .skill-pct {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+
+    .bar-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+      transition: width 0.65s var(--ease);
+    }
+
+    /* =========================================
+       10. CONTACT, MODAL & TOAST
+       ========================================= */
+    .contact-box {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 40px;
+    }
+
+    .email-copy-box {
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      flex-wrap: wrap;
+    }
+
+    .form-field { margin-bottom: 16px; }
+    .form-field label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .input-el {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(5, 6, 10, 0.65);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.94rem;
+    }
+
+    .input-el:focus { outline: none; border-color: var(--accent); }
+    textarea.input-el { min-height: 115px; resize: vertical; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 3, 7, 0.78);
+      backdrop-filter: blur(10px);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .modal-panel {
+      background: #0b0e17;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.3s var(--ease);
+    }
+
+    .modal-backdrop.open .modal-panel { transform: scale(1); }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0d131f;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      z-index: 400;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.35s var(--ease);
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0 70px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* =========================================
+       11. RESPONSIVE
+       ========================================= */
+    @media (max-width: 900px) {
+      .hero-layout,
+      .projects-showcase-grid,
+      .featured-horror-card,
+      .exp-grid,
+      .certs-grid,
+      .contact-box {
+        grid-template-columns: 1fr;
+      }
+
+      .horror-stage {
+        min-height: 290px;
+        border-right: none;
+        border-bottom: 1px solid rgba(239, 68, 68, 0.22);
+      }
+
+      .menu-btn { display: grid; }
+
+      .nav-links {
+        position: fixed;
+        top: 86px;
+        left: 4%;
+        width: 92%;
+        background: #0b0e17;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        flex-direction: column;
+        padding: 22px;
+        gap: 16px;
+        display: none;
+      }
+
+      .nav-links.open { display: flex; }
+      .telemetry-hud { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-track" id="scrollTrack"></div>
+  <canvas id="orbital-canvas"></canvas>
+  <div class="grain-overlay"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <div class="telemetry-hud">
+    <span class="hud-pulse"></span>
+    <span id="hudSection">SECTOR // 01 ORBIT</span>
+    <span>|</span>
+    <span id="hudDepth">SCROLL 00%</span>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header>
+    <div class="nav-inner">
+      <a href="#home" class="brand">KRISH<span class="brand-dot">.</span>TIWARI</a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">01. Orbit</a></li>
+        <li><a href="#projects">02. Projects</a></li>
+        <li><a href="#experience">03. Experience</a></li>
+        <li><a href="#skills">04. Stack</a></li>
+        <li><a href="#contact">05. Contact</a></li>
+      </ul>
+
+      <div class="nav-controls">
+        <button class="mode-pill" id="modeToggle" title="Switch Orbital Studio / Null Signal Horror theme">
+          <span>◉</span>
+          <span id="modeLabel">ORBITAL MODE</span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="home" class="hero">
+      <div class="container hero-layout">
+        <div class="reveal">
+          <div class="hero-badge">
+            <span class="hud-pulse"></span>
+            SOLO HORROR PLAYTEST LIVE &bull; BACHELOR'S IN IT
+          </div>
+
+          <h1>
+            KRISH<br />
+            <span class="outline-text">TIWARI</span>
+          </h1>
+
+          <div class="role-scramble" id="scrambleRole">&gt; GAME DEVELOPER &amp; DESIGNER_</div>
+
+          <p class="hero-desc">
+            Information Technology undergraduate crafting atmospheric horror worlds in <strong>Unreal Engine 5</strong> and high-craft interactive interfaces for the web. Currently building my solo horror project <strong>Null Signal</strong>.
+          </p>
+
+          <div class="cta-row">
+            <a href="https://krishtiwari0020.itch.io/null-signal-playtest" target="_blank" rel="noopener" class="btn btn-horror">
+              ▶ Play Null Signal Demo
+            </a>
+            <a href="#projects" class="btn btn-ghost">Explore Projects ↓</a>
+          </div>
+        </div>
+
+        <div class="orbital-spec-card reveal">
+          <div class="spec-header">
+            <span>STUDIO TELEMETRY // v2.6</span>
+            <span>UE5 + WEB</span>
+          </div>
+
+          <div class="spec-row">
+            <span class="spec-key">STATUS</span>
+            <span class="spec-val">IT Student &amp; Indie Dev</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">ACTIVE BUILD</span>
+            <span class="spec-val" style="color: var(--accent);">Null Signal (Horror)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">PREV. INTERNSHIP</span>
+            <span class="spec-val">Frontend Dev @ Ruhyaa</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">ENGINE / STACK</span>
+            <span class="spec-val">UE5 Blueprints &bull; Web UI</span>
+          </div>
+
+          <div class="orb-controls">
+            <button class="chip-btn active" id="btnAutoSpin">Auto-Orbit: ON</button>
+            <button class="chip-btn" id="btnPulseOrb">Pulse Core</button>
+            <button class="chip-btn" id="btnSignalShortcut">Trigger Horror Signal</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================
+         PROJECTS SHOWCASE (INTERACTIVE PREVIEWS)
+         ===================================== -->
+    <section id="projects">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">02 // Interactive Showcase</span>
+            <h2 class="section-title">Games &amp; Web Engineering</h2>
+          </div>
+          <p class="section-sub">
+            Move your cursor inside <strong>Null Signal</strong> to sweep the flashlight through the corridor, or inspect my live web interfaces below.
+          </p>
+        </div>
+
+        <div class="filter-strip reveal">
+          <button class="filter-pill active" data-filter="all">All Works</button>
+          <button class="filter-pill" data-filter="game">Horror / Game Dev</button>
+          <button class="filter-pill" data-filter="web">Frontend &amp; UI</button>
+        </div>
+
+        <div class="projects-showcase-grid">
+
+          <!-- 1. FEATURED HORROR GAME: NULL SIGNAL -->
+          <article class="project-card featured-horror-card reveal" data-category="game">
+            <div class="horror-stage" id="horrorStage">
+              <canvas id="horrorCanvas"></canvas>
+
+              <div class="horror-hud-top">
+                <span class="rec-badge"><span class="rec-dot"></span> REC // CAM-04</span>
+                <span>FREQ: 00.20 MHz &bull; SIGNAL UNSTABLE</span>
+              </div>
+
+              <div class="horror-hud-bottom">
+                <span class="flashlight-hint">🔦 Move cursor to sweep flashlight</span>
+                <canvas id="waveCanvas" width="150" height="36"></canvas>
+              </div>
+            </div>
+
+            <div class="featured-horror-info">
+              <div>
+                <div class="horror-tag">Featured Solo Horror Project // Unreal Engine 5</div>
+                <h3 class="horror-title">NULL SIGNAL</h3>
+                <p class="horror-hook">
+                  "The broadcast stopped at 03:14 AM... yet something is still transmitting from inside."
+                </p>
+                <p class="project-desc">
+                  A solo-developed psychological horror experience built completely from scratch. Step into pitch-black tension, navigate eerie corridors with limited light, and survive the signal distortion. Playtest build live on Itch.io.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Unreal Engine 5</span>
+                  <span class="tag">UE5 Blueprints</span>
+                  <span class="tag">Atmospheric Horror</span>
+                  <span class="tag">Solo Developer</span>
+                  <span class="tag">Playable Demo</span>
+                </div>
+              </div>
+
+              <div class="cta-row">
+                <a href="https://krishtiwari0020.itch.io/null-signal-playtest" target="_blank" rel="noopener" class="btn btn-horror">
+                  ▶ Play Demo on Itch.io ↗
+                </a>
+                <button class="btn btn-ghost" onclick="openDossier('null-signal')">
+                  Inspect Case Study
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 2. ADMIN DASHBOARD: LIVE MINI UI PREVIEW -->
+          <article class="project-card reveal" data-category="web">
+            <div class="ui-preview-stage">
+              <div class="browser-frame">
+                <div class="browser-top">
+                  <span class="b-dot" style="background:#ef4444;"></span>
+                  <span class="b-dot" style="background:#f59e0b;"></span>
+                  <span class="b-dot" style="background:#10b981;"></span>
+                  <span class="b-url">admin-dashboard-design-bice.vercel.app</span>
+                </div>
+                <div class="mini-dash-body">
+                  <div class="mini-sidebar">
+                    <div class="mini-nav-item active"></div>
+                    <div class="mini-nav-item"></div>
+                    <div class="mini-nav-item"></div>
+                    <div class="mini-nav-item"></div>
+                  </div>
+                  <div class="mini-dash-main">
+                    <div class="mini-kpis">
+                      <div class="mini-kpi"><span>$48.2K</span><small>REVENUE</small></div>
+                      <div class="mini-kpi"><span>+24.8%</span><small>GROWTH</small></div>
+                      <div class="mini-kpi"><span>1,420</span><small>ACTIVE</small></div>
+                    </div>
+                    <div class="mini-chart-box">
+                      <div class="mini-bar" style="height: 38%;"></div>
+                      <div class="mini-bar" style="height: 62%;"></div>
+                      <div class="mini-bar" style="height: 48%;"></div>
+                      <div class="mini-bar" style="height: 82%;"></div>
+                      <div class="mini-bar" style="height: 68%;"></div>
+                      <div class="mini-bar" style="height: 94%;"></div>
+                      <div class="mini-bar" style="height: 76%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-cat-mini">College Web Engineering &bull; Deployed</div>
+              <h3 class="project-title">Modern Admin Dashboard</h3>
+              <p class="project-desc">
+                Interactive analytics &amp; management dashboard built for my Bachelor's in IT coursework, featuring responsive grids, KPI cards, and clean UI hierarchy.
+              </p>
+              <div class="tag-row">
+                <span class="tag">Frontend UI</span>
+                <span class="tag">Analytics Layout</span>
+                <span class="tag">Responsive</span>
+                <span class="tag">Vercel</span>
+              </div>
+              <div class="card-footer">
+                <button class="card-link" onclick="openDossier('admin-dashboard')">View Details →</button>
+                <a href="https://admin-dashboard-design-bice.vercel.app/" target="_blank" rel="noopener" class="card-link">Open Live App ↗</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- 3. RUHYAA INTERNSHIP: RESPONSIVE DEVICE PREVIEW -->
+          <article class="project-card reveal" data-category="web">
+            <div class="ui-preview-stage" style="background: #0a0814;">
+              <div class="ruhyaa-stage">
+                <div class="browser-frame" style="height: 162px;">
+                  <div class="browser-top">
+                    <span class="b-dot" style="background:#ef4444;"></span>
+                    <span class="b-dot" style="background:#f59e0b;"></span>
+                    <span class="b-dot" style="background:#10b981;"></span>
+                    <span class="b-url">ruhyaa // frontend-components</span>
+                  </div>
+                  <div class="mini-web-hero">
+                    <div class="wire-pill"></div>
+                    <div class="wire-title"></div>
+                    <div class="wire-sub"></div>
+                    <div class="wire-cards">
+                      <div class="wire-card"></div>
+                      <div class="wire-card"></div>
+                      <div class="wire-card"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mini-phone">
+                  <div class="phone-notch"></div>
+                  <div class="wire-pill" style="width: 30px;"></div>
+                  <div class="wire-title" style="width: 90%; height: 9px;"></div>
+                  <div class="wire-sub" style="width: 70%;"></div>
+                  <div class="wire-card" style="height: 40px; margin-top: 4px;"></div>
+                  <div class="wire-card" style="height: 40px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-cat-mini">3-Month Frontend Internship &bull; Shipped</div>
+              <h3 class="project-title">Ruhyaa Web Platform</h3>
+              <p class="project-desc">
+                Designed and implemented responsive, user-friendly web interfaces and modular frontend components during my 3-month Frontend Developer internship at Ruhyaa.
+              </p>
+              <div class="tag-row">
+                <span class="tag">Frontend Dev</span>
+                <span class="tag">Responsive UX</span>
+                <span class="tag">UI Components</span>
+                <span class="tag">Team Delivery</span>
+              </div>
+              <div class="card-footer">
+                <button class="card-link" onclick="openDossier('ruhyaa-web')">View Details →</button>
+                <a href="#experience" class="card-link">See Certificate ↓</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE & CREDENTIALS -->
+    <section id="experience">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">03 // Background &amp; Credentials</span>
+            <h2 class="section-title">Experience &amp; Verified Certificates</h2>
+          </div>
+          <p class="section-sub">
+            Production frontend internship paired with intensive Unreal Engine 5 Blueprint mastery.
+          </p>
+        </div>
+
+        <div class="exp-grid">
+          <article class="timeline-card reveal">
+            <div class="timeline-meta">
+              <span>INTERNSHIP // 3 MONTHS</span>
+              <span>10 APR 2026 — 10 JUN 2026</span>
+            </div>
+            <h3 class="timeline-role">Frontend Developer Intern</h3>
+            <div class="timeline-org">Ruhyaa &bull; Founders: Rudra Darji &amp; Shreeya Jagtap</div>
+            <ul class="bullet-list">
+              <li>Designed and implemented responsive, user-friendly web interfaces across Ruhyaa's website.</li>
+              <li>Built modular frontend components to improve maintainability and visual consistency.</li>
+              <li>Enhanced overall website functionality and user experience through iterative UI refinements.</li>
+              <li>Collaborated with the team to deliver production features matching project requirements.</li>
+            </ul>
+          </article>
+
+          <article class="timeline-card reveal">
+            <div class="timeline-meta">
+              <span>UNDERGRADUATE DEGREE</span>
+              <span>IN PROGRESS</span>
+            </div>
+            <h3 class="timeline-role">Bachelor's in Information Technology</h3>
+            <div class="timeline-org">College Studies &bull; Web Systems &amp; Interactive Design</div>
+            <ul class="bullet-list">
+              <li>Building strong foundations in software engineering, web architecture, and UI design.</li>
+              <li>Built and deployed an end-to-end Admin Dashboard web application on Vercel.</li>
+              <li>Combining academic IT principles with solo horror game development in Unreal Engine 5.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="certs-grid">
+          <div class="cert-card reveal">
+            <div class="cert-seal">★ VERIFIED INTERNSHIP CREDENTIAL</div>
+            <h3 class="cert-title">Certificate of Internship Completion — Ruhyaa</h3>
+            <p class="cert-details">
+              Awarded to <strong>Krish Tiwari</strong> for completing a 3-month Frontend Developer internship (10th April 2026 – 10th June 2026). Signed by Founders Rudra Darji &amp; Shreeya Jagtap.
+            </p>
+            <div class="cert-id">ROLE: Frontend Developer &bull; STATUS: Completed &amp; Certified</div>
+          </div>
+
+          <div class="cert-card reveal">
+            <div class="cert-seal">★ UDEMY CERTIFICATION // 42.5 HOURS</div>
+            <h3 class="cert-title">Unreal Engine 5: All in one UE5 master Blueprint</h3>
+            <p class="cert-details">
+              Completed 42.5 total hours of Unreal Engine 5 Blueprint scripting and game systems training instructed by <strong>Unreal magic</strong> on Oct. 26, 2026.
+            </p>
+            <div class="cert-id">CERT ID: UC-a79e971f-234d-443f-a093-f13dfaedddf5 &bull; REF: 0004</div>
+            <a href="https://ude.my/UC-a79e971f-234d-443f-a093-f13dfaedddf5" target="_blank" rel="noopener" class="card-link">
+              Verify Certificate on Udemy ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS DIAGNOSTICS -->
+    <section id="skills">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">04 // Diagnostics</span>
+            <h2 class="section-title">Technical Arsenal</h2>
+          </div>
+          <p class="section-sub">
+            Switch tabs to inspect my capabilities across Game Development, Frontend Engineering, and Tools.
+          </p>
+        </div>
+
+        <div class="diag-panel reveal">
+          <div class="diag-tabs">
+            <button class="filter-pill active" data-skill-tab="gamedev">Game Dev &amp; UE5</button>
+            <button class="filter-pill" data-skill-tab="frontend">Frontend &amp; UI</button>
+            <button class="filter-pill" data-skill-tab="workflow">IT &amp; Workflow</button>
+          </div>
+          <div class="diag-grid" id="skillsGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">05 // Transmission</span>
+            <h2 class="section-title">Let's Build Something</h2>
+          </div>
+          <p class="section-sub">
+            Open to game design collaborations, frontend internships/roles, and creative web projects.
+          </p>
+        </div>
+
+        <div class="contact-box reveal">
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 12px;">Direct Uplink</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Want to share feedback on <strong>Null Signal</strong>, discuss a frontend role, or collaborate on an Unreal Engine project? Drop a message below.
+            </p>
+
+            <div class="email-copy-box">
+              <span>tiwarikrish0020@gmail.com</span>
+              <button class="chip-btn" id="copyEmailBtn" type="button">Copy Email</button>
+            </div>
+
+            <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap;">
+              <a href="https://krishtiwari0020.itch.io/null-signal-playtest" target="_blank" rel="noopener" class="btn btn-horror">Itch.io Playtest ↗</a>
+              <a href="https://admin-dashboard-design-bice.vercel.app/" target="_blank" rel="noopener" class="btn btn-ghost">Dashboard Live ↗</a>
+            </div>
+          </div>
+
+          <form id="contactForm">
+            <div class="form-field">
+              <label for="senderName">Name</label>
+              <input id="senderName" type="text" class="input-el" placeholder="Your name" required />
+            </div>
+            <div class="form-field">
+              <label for="senderEmail">Email</label>
+              <input id="senderEmail" type="email" class="input-el" placeholder="you@domain.com" required />
+            </div>
+            <div class="form-field">
+              <label for="senderMsg">Message</label>
+              <textarea id="senderMsg" class="input-el" placeholder="Tell me about your project or playtest feedback..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+              Transmit Message →
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      KRISH TIWARI &bull; GAME DEVELOPER &amp; FRONTEND ENGINEER &bull; <span id="year"></span>
+    </div>
+  </footer>
+
+  <!-- DOSSIER MODAL -->
+  <div class="modal-backdrop" id="projectModal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div class="eyebrow" id="modalType">PROJECT</div>
+      <h3 id="modalTitle" style="font-family: var(--font-display); font-size: 1.7rem; margin-bottom: 12px;">Title</h3>
+      <p id="modalBody" style="color: var(--text-muted); margin-bottom: 18px; font-size: 0.95rem;"></p>
+      <div class="tag-row" id="modalTags"></div>
+      <div class="cta-row">
+        <a id="modalLink" href="#" target="_blank" rel="noopener" class="btn btn-primary">Launch Live Project ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Signal received.</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    /* =========================================
+       1. DOSSIER & SKILLS DATA
+       ========================================= */
+    const dossierData = {
+      "null-signal": {
+        categoryLabel: "SOLO HORROR GAME // UNREAL ENGINE 5",
+        title: "Null Signal",
+        fullDesc: "Null Signal is my independent solo horror game project currently in active development. Built from scratch using Unreal Engine 5 Blueprints, atmospheric lighting, custom level flow, and tension-driven pacing. A playable playtest build is live now on Itch.io for community feedback.",
+        tags: ["Unreal Engine 5", "Blueprints", "Horror Design", "Solo Dev", "Itch.io"],
+        liveUrl: "https://krishtiwari0020.itch.io/null-signal-playtest",
+        liveLabel: "Play Demo on Itch.io ↗"
+      },
+      "admin-dashboard": {
+        categoryLabel: "COLLEGE WEB PROJECT",
+        title: "Modern Admin Dashboard",
+        fullDesc: "Designed and engineered an interactive admin dashboard interface focusing on clean visual hierarchy, responsive layout grids, intuitive data cards, and fast client-side navigation. Hosted live on Vercel.",
+        tags: ["Frontend UI", "Responsive Design", "Dashboard", "Vercel"],
+        liveUrl: "https://admin-dashboard-design-bice.vercel.app/",
+        liveLabel: "Open Live App ↗"
+      },
+      "ruhyaa-web": {
+        categoryLabel: "PRODUCTION INTERNSHIP",
+        title: "Ruhyaa Website Enhancements",
+        fullDesc: "During my 3-month Frontend Developer internship at Ruhyaa (April–June 2026), I collaborated with the team and founders to develop modular frontend components, elevate site responsiveness, and deliver cleaner user experiences aligned with project specs.",
+        tags: ["Frontend Dev", "UI Components", "UX Optimization", "Team Delivery"],
+        liveUrl: "#experience",
+        liveLabel: "View Credential ↓"
+      }
+    };
+
+    const skillsData = {
+      gamedev: [
+        { name: "Unreal Engine 5 & Blueprints", level: 88 },
+        { name: "Horror Level & Atmosphere Design", level: 85 },
+        { name: "Gameplay Systems & Prototyping", level: 82 },
+        { name: "Lighting, Post-Processing & Pacing", level: 80 }
+      ],
+      frontend: [
+        { name: "HTML5 / Modern CSS3", level: 92 },
+        { name: "JavaScript (ES6+) & Interactivity", level: 86 },
+        { name: "Responsive UI / Component Design", level: 90 },
+        { name: "Dashboard & Web App Interfaces", level: 85 }
+      ],
+      workflow: [
+        { name: "Bachelor's in IT Core Concepts", level: 84 },
+        { name: "Itch.io Playtest & Build Packaging", level: 88 },
+        { name: "Git, GitHub & Vercel Deployment", level: 85 },
+        { name: "Team Collaboration & Agile Delivery", level: 87 }
+      ]
+    };
+
+    /* =========================================
+       2. INTERACTIVE HORROR FLASHLIGHT CANVAS (NULL SIGNAL)
+       ========================================= */
+    (function initHorrorStage() {
+      const stage = document.getElementById("horrorStage");
+      const hCanvas = document.getElementById("horrorCanvas");
+      const hCtx = hCanvas.getContext("2d");
+      const wCanvas = document.getElementById("waveCanvas");
+      const wCtx = wCanvas.getContext("2d");
+
+      let lightX = 0.5;
+      let lightY = 0.5;
+      let targetX = 0.5;
+      let targetY = 0.5;
+      let isHovering = false;
+      let time = 0;
+
+      stage.addEventListener("mousemove", e => {
+        const rect = stage.getBoundingClientRect();
+        targetX = (e.clientX - rect.left) / rect.width;
+        targetY = (e.clientY - rect.top) / rect.height;
+        isHovering = true;
+      });
+
+      stage.addEventListener("mouseleave", () => {
+        isHovering = false;
+      });
+
+      function resizeHorror() {
+        hCanvas.width = stage.clientWidth;
+        hCanvas.height = stage.clientHeight;
+      }
+      resizeHorror();
+      window.addEventListener("resize", resizeHorror);
+
+      function renderHorrorScene() {
+        time += 0.02;
+        const w = hCanvas.width;
+        const h = hCanvas.height;
+
+        // Auto sweep flashlight smoothly when user isn't hovering
+        if (!isHovering) {
+          targetX = 0.5 + Math.sin(time * 0.7) * 0.28;
+          targetY = 0.48 + Math.cos(time * 1.1) * 0.14;
+        }
+        lightX += (targetX - lightX) * 0.12;
+        lightY += (targetY - lightY) * 0.12;
+
+        const fx = lightX * w;
+        const fy = lightY * h;
+
+        // 1. Pitch dark corridor background
+        hCtx.fillStyle = "#040203";
+        hCtx.fillRect(0, 0, w, h);
+
+        // 2. Perspective hallway lines + ominous doorway
+        const vx = w * 0.5;
+        const vy = h * 0.46;
+        const doorW = w * 0.22;
+        const doorH = h * 0.54;
+        const dx = vx - doorW / 2;
+        const dy = vy - doorH / 2 + 12;
+
+        hCtx.strokeStyle = "rgba(180, 40, 40, 0.22)";
+        hCtx.lineWidth = 1.5;
+        // Corridor perspective lines
+        [
+          [0, 0, dx, dy],
+          [w, 0, dx + doorW, dy],
+          [0, h, dx, dy + doorH],
+          [w, h, dx + doorW, dy + doorH]
+        ].forEach(([x1, y1, x2, y2]) => {
+          hCtx.beginPath();
+          hCtx.moveTo(x1, y1);
+          hCtx.lineTo(x2, y2);
+          hCtx.stroke();
+        });
+
+        // Doorframe
+        hCtx.fillStyle = "#090204";
+        hCtx.fillRect(dx, dy, doorW, doorH);
+        hCtx.strokeStyle = "rgba(239, 68, 68, 0.32)";
+        hCtx.strokeRect(dx, dy, doorW, doorH);
+
+        // 3. Cryptic wall message revealed when flashlight shines nearby
+        const distToLeftWall = Math.hypot(fx - w * 0.2, fy - h * 0.55);
+        const wallAlpha = Math.max(0, 1 - distToLeftWall / (w * 0.32));
+        if (wallAlpha > 0.05) {
+          hCtx.save();
+          hCtx.font = "700 13px 'JetBrains Mono', monospace";
+          hCtx.fillStyle = `rgba(220, 38, 38, ${wallAlpha * 0.85})`;
+          hCtx.fillText("DON'T ANSWER", w * 0.08, h * 0.52);
+          hCtx.fillText("THE SIGNAL", w * 0.1, h * 0.58);
+          hCtx.restore();
+        }
+
+        // Right wall scratches / frequency number
+        const distToRightWall = Math.hypot(fx - w * 0.82, fy - h * 0.45);
+        const rightAlpha = Math.max(0, 1 - distToRightWall / (w * 0.32));
+        if (rightAlpha > 0.05) {
+          hCtx.save();
+          hCtx.font = "700 12px 'JetBrains Mono', monospace";
+          hCtx.fillStyle = `rgba(248, 113, 113, ${rightAlpha * 0.8})`;
+          hCtx.fillText("IT HEARS YOU", w * 0.72, h * 0.45);
+          hCtx.restore();
+        }
+
+        // 4. Shadowy Entity inside doorway (reacts to flashlight!)
+        const distToDoor = Math.hypot(fx - vx, fy - vy);
+        const entityReveal = Math.max(0.18, 1 - distToDoor / (w * 0.45));
+
+        // Silhouette torso & head
+        hCtx.fillStyle = `rgba(0, 0, 0, 0.95)`;
+        hCtx.beginPath();
+        hCtx.ellipse(vx, dy + doorH * 0.52, doorW * 0.24, doorH * 0.36, 0, 0, Math.PI * 2);
+        hCtx.fill();
+        hCtx.beginPath();
+        hCtx.arc(vx, dy + doorH * 0.24, doorW * 0.14, 0, Math.PI * 2);
+        hCtx.fill();
+
+        // Eerie glowing red eyes (occasional flicker/blink)
+        const blink = Math.sin(time * 2.5) > 0.96 ? 0.1 : 1;
+        const eyeGlow = (0.45 + entityReveal * 0.55) * blink;
+        hCtx.fillStyle = `rgba(239, 68, 68, ${eyeGlow})`;
+        hCtx.shadowColor = "#ef4444";
+        hCtx.shadowBlur = 12;
+        hCtx.beginPath();
+        hCtx.arc(vx - 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2);
+        hCtx.arc(vx + 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2);
+        hCtx.fill();
+        hCtx.shadowBlur = 0;
+
+        // 5. Floating dust / fog particles inside beam
+        for (let i = 0; i < 18; i++) {
+          const px = ((Math.sin(i * 73.1 + time * 0.4) * 0.5 + 0.5) * w);
+          const py = ((Math.cos(i * 41.7 + time * 0.3) * 0.5 + 0.5) * h);
+          const d = Math.hypot(fx - px, fy - py);
+          if (d < 130) {
+            hCtx.fillStyle = `rgba(255, 220, 210, ${(1 - d / 130) * 0.38})`;
+            hCtx.fillRect(px, py, 1.8, 1.8);
+          }
+        }
+
+        // 6. Flashlight Cone Radial Mask + Darkness Vignette
+        const flicker = Math.random() > 0.985 ? 0.55 : 1; // Subtle horror bulb flicker
+        const beamRadius = Math.max(w, h) * 0.38 * flicker;
+        const grad = hCtx.createRadialGradient(fx, fy, 8, fx, fy, beamRadius);
+        grad.addColorStop(0, "rgba(255, 235, 210, 0.22)");
+        grad.addColorStop(0.35, "rgba(220, 60, 60, 0.08)");
+        grad.addColorStop(0.75, "rgba(4, 2, 3, 0.72)");
+        grad.addColorStop(1, "rgba(2, 1, 2, 0.96)");
+
+        hCtx.fillStyle = grad;
+        hCtx.fillRect(0, 0, w, h);
+
+        // 7. Occasional VHS glitch horizontal tear
+        if (Math.random() > 0.96) {
+          const gy = Math.random() * h;
+          hCtx.fillStyle = "rgba(239, 68, 68, 0.16)";
+          hCtx.fillRect(0, gy, w, 2 + Math.random() * 4);
+        }
+
+        // 8. Live Oscilloscope Signal Waveform
+        wCtx.clearRect(0, 0, wCanvas.width, wCanvas.height);
+        wCtx.strokeStyle = "#ef4444";
+        wCtx.lineWidth = 1.5;
+        wCtx.beginPath();
+        const chaos = isHovering ? 11 : 6;
+        for (let x = 0; x < wCanvas.width; x += 3) {
+          const y = 18 + Math.sin(x * 0.18 + time * 6) * (Math.random() * chaos);
+          if (x === 0) wCtx.moveTo(x, y);
+          else wCtx.lineTo(x, y);
+        }
+        wCtx.stroke();
+
+        requestAnimationFrame(renderHorrorScene);
+      }
+      renderHorrorScene();
+    })();
+
+    /* =========================================
+       3. THREE.JS 3D ORBITAL BACKGROUND
+       ========================================= */
+    const canvas = document.getElementById("orbital-canvas");
+    let autoSpin = true;
+    let pulseImpulse = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    window.addEventListener("mousemove", e => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    function init3DOrbital() {
+      if (typeof THREE !== "undefined") {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 6.2;
+
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const orbitalGroup = new THREE.Group();
+        scene.add(orbitalGroup);
+
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.45 });
+        const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 1), coreMat);
+        orbitalGroup.add(coreMesh);
+
+        const innerMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, transparent: true, opacity: 0.55 });
+        const innerMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.65, 0), innerMat);
+        orbitalGroup.add(innerMesh);
+
+        const rings = [];
+        [
+          { r: 2.1, rx: 1.1, ry: 0.3, c: 0x38bdf8, o: 0.45 },
+          { r: 2.65, rx: -0.8, ry: 0.9, c: 0x94a3b8, o: 0.25 },
+          { r: 3.15, rx: 0.4, ry: -1.1, c: 0xa855f7, o: 0.32 }
+        ].forEach(cfg => {
+          const mat = new THREE.MeshBasicMaterial({ color: cfg.c, transparent: true, opacity: cfg.o });
+          const mesh = new THREE.Mesh(new THREE.TorusGeometry(cfg.r, 0.01, 12, 120), mat);
+          mesh.rotation.x = cfg.rx;
+          mesh.rotation.y = cfg.ry;
+          orbitalGroup.add(mesh);
+          rings.push({ mesh, mat });
+        });
+
+        const pCount = 1000;
+        const pos = new Float32Array(pCount * 3);
+        for (let i = 0; i < pCount; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const d = 2.2 + Math.random() * 5.5;
+          pos[i * 3] = Math.cos(a) * d;
+          pos[i * 3 + 1] = (Math.random() - 0.5) * 4.5;
+          pos[i * 3 + 2] = Math.sin(a) * d;
+        }
+        const pGeo = new THREE.BufferGeometry();
+        pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xcbd5e1, size: 0.025, transparent: true, opacity: 0.6 }));
+        scene.add(particles);
+
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);
+          const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
+          const scrollProg = window.scrollY / maxScroll;
+          const isSignalMode = document.documentElement.getAttribute("data-mode") === "signal";
+
+          const c1 = isSignalMode ? 0xef4444 : 0x38bdf8;
+          const c2 = isSignalMode ? 0xf97316 : 0xa855f7;
+          coreMat.color.setHex(c1);
+          innerMat.color.setHex(c2);
+          rings[0].mat.color.setHex(c1);
+          rings[2].mat.color.setHex(c2);
+
+          const targetX = window.innerWidth > 900 ? Math.sin(scrollProg * Math.PI * 2) * 1.45 + 1.1 : 0;
+          orbitalGroup.position.x += (targetX - orbitalGroup.position.x) * 0.05;
+          orbitalGroup.position.y = Math.cos(scrollProg * Math.PI) * 0.35;
+
+          const s = 1 + pulseImpulse * 0.32 + Math.sin(scrollProg * Math.PI) * 0.14;
+          orbitalGroup.scale.set(s, s, s);
+          pulseImpulse *= 0.92;
+
+          if (autoSpin) {
+            coreMesh.rotation.y += isSignalMode ? 0.008 : 0.0035;
+            coreMesh.rotation.x += 0.002;
+            innerMesh.rotation.y -= 0.006;
+            rings[0].mesh.rotation.z += 0.004;
+            rings[1].mesh.rotation.x += 0.0025;
+            rings[2].mesh.rotation.y -= 0.003;
+            particles.rotation.y += 0.0008;
+          }
+
+          orbitalGroup.rotation.y += (mouseX * 0.45 + scrollProg * 3.2 - orbitalGroup.rotation.y) * 0.04;
+          orbitalGroup.rotation.x += (mouseY * 0.35 - orbitalGroup.rotation.x) * 0.04;
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
+    }
+    init3DOrbital();
+
+    /* =========================================
+       4. MODE SWITCH, SCRAMBLE, FILTER & MODAL
+       ========================================= */
+    const modeToggle = document.getElementById("modeToggle");
+    const modeLabel = document.getElementById("modeLabel");
+    const btnSignalShortcut = document.getElementById("btnSignalShortcut");
+    const btnAutoSpin = document.getElementById("btnAutoSpin");
+    const btnPulseOrb = document.getElementById("btnPulseOrb");
+
+    function toggleSignalMode() {
+      const root = document.documentElement;
+      const isSignal = root.getAttribute("data-mode") === "signal";
+      const next = isSignal ? "orbital" : "signal";
+      root.setAttribute("data-mode", next);
+      modeLabel.textContent = next === "signal" ? "NULL SIGNAL" : "ORBITAL MODE";
+      pulseImpulse = 0.8;
+      showToast(next === "signal" ? "⚠ Null Signal Horror Mode Engaged" : "◉ Orbital Studio Mode Restored");
+    }
+
+    modeToggle.addEventListener("click", toggleSignalMode);
+    btnSignalShortcut.addEventListener("click", toggleSignalMode);
+    btnAutoSpin.addEventListener("click", () => {
+      autoSpin = !autoSpin;
+      btnAutoSpin.textContent = `Auto-Orbit: ${autoSpin ? "ON" : "OFF"}`;
+      btnAutoSpin.classList.toggle("active", autoSpin);
+    });
+    btnPulseOrb.addEventListener("click", () => { pulseImpulse = 1; });
+
+    const roles = [
+      "> GAME DEVELOPER & DESIGNER_",
+      "> CREATOR OF NULL SIGNAL (HORROR)_",
+      "> FRONTEND DEVELOPER (EX-RUHYAA)_",
+      "> BACHELOR'S IN IT STUDENT_"
+    ];
+    const scrambleEl = document.getElementById("scrambleRole");
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#*";
+    let roleIndex = 0;
+
+    setInterval(() => {
+      roleIndex = (roleIndex + 1) % roles.length;
+      const text = roles[roleIndex];
+      let iter = 0;
+      const interval = setInterval(() => {
+        scrambleEl.textContent = text.split("").map((ch, idx) =>
+          (idx < iter || ch === " ") ? text[idx] : chars[Math.floor(Math.random() * chars.length)]
+        ).join("");
+        iter += 1.2;
+        if (iter >= text.length) {
+          scrambleEl.textContent = text;
+          clearInterval(interval);
+        }
+      }, 28);
+    }, 3600);
+
+    // Project Filters
+    const filterButtons = document.querySelectorAll("[data-filter]");
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const f = btn.dataset.filter;
+        document.querySelectorAll(".project-card").forEach(card => {
+          card.classList.toggle("hidden", f !== "all" && card.dataset.category !== f);
+        });
+      });
+    });
+
+    // Modal
+    const modal = document.getElementById("projectModal");
+    window.openDossier = function(id) {
+      const p = dossierData[id];
+      if (!p) return;
+      document.getElementById("modalType").textContent = p.categoryLabel;
+      document.getElementById("modalTitle").textContent = p.title;
+      document.getElementById("modalBody").textContent = p.fullDesc;
+      document.getElementById("modalTags").innerHTML = p.tags.map(t => `<span class="tag">${t}</span>`).join("");
+      const link = document.getElementById("modalLink");
+      link.href = p.liveUrl;
+      link.textContent = p.liveLabel;
+      if (p.liveUrl.startsWith("http")) link.setAttribute("target", "_blank");
+      else link.removeAttribute("target");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+    };
+
+    function closeModal() {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+    // Skills Tabs
+    const skillsGrid = document.getElementById("skillsGrid");
+    const skillTabs = document.querySelectorAll("[data-skill-tab]");
+    function renderSkills(tabKey) {
+      skillsGrid.innerHTML = skillsData[tabKey].map(s => `
+        <div class="skill-node">
+          <div class="skill-top"><span>${s.name}</span><span class="skill-pct">${s.level}%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width: ${s.level}%"></div></div>
+        </div>
+      `).join("");
+    }
+    renderSkills("gamedev");
+
+    skillTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        skillTabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderSkills(tab.dataset.skillTab);
+      });
+    });
+
+    // Cursor glow, scroll telemetry, mobile menu, toast & form
+    const cursorGlow = document.getElementById("cursorGlow");
+    window.addEventListener("mousemove", e => {
+      cursorGlow.style.left = `${e.clientX}px`;
+      cursorGlow.style.top = `${e.clientY}px`;
+    });
+
+    const scrollTrack = document.getElementById("scrollTrack");
+    const hudDepth = document.getElementById("hudDepth");
+    const hudSection = document.getElementById("hudSection");
+    const sectionNames = {
+      home: "SECTOR // 01 ORBIT",
+      projects: "SECTOR // 02 PROJECTS",
+      experience: "SECTOR // 03 CREDENTIALS",
+      skills: "SECTOR // 04 STACK",
+      contact: "SECTOR // 05 UPLINK"
+    };
+
+    window.addEventListener("scroll", () => {
+      const max = Math.max(document.body.scrollHeight - window.innerHeight, 1);
+      const pct = Math.min(100, Math.round((window.scrollY / max) * 100));
+      scrollTrack.style.width = `${pct}%`;
+      hudDepth.textContent = `SCROLL ${String(pct).padStart(2, "0")}%`;
+      document.querySelectorAll("section[id]").forEach(sec => {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= 100) {
+          hudSection.textContent = sectionNames[sec.id] || "SECTOR";
+        }
+      });
+    });
+
+    const menuBtn = document.getElementById("menuBtn");
+    const navLinks = document.getElementById("navLinks");
+    menuBtn.addEventListener("click", () => navLinks.classList.toggle("open"));
+    navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => navLinks.classList.remove("open")));
+
+    const toast = document.getElementById("toast");
+    let toastTimer;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+
+    document.getElementById("copyEmailBtn").addEventListener("click", () => {
+      navigator.clipboard?.writeText("tiwarikrish0020@gmail.com");
+      showToast("✓ Copied tiwarikrish0020@gmail.com to clipboard");
+    });
+
+    document.getElementById("contactForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("senderName").value.trim();
+      const email = document.getElementById("senderEmail").value.trim();
+      const msg = document.getElementById("senderMsg").value.trim();
+      window.location.href = `mailto:tiwarikrish0020@gmail.com?subject=${encodeURIComponent(`Portfolio Inquiry from ${name}`)}&body=${encodeURIComponent(`From: ${name} (${email})\n\n${msg}`)}`;
+      e.target.reset();
+      showToast("✓ Opening your email client!");
+    });
+
+    const revealObs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => revealObs.observe(el));
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
