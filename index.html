@@ -3,20 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Krish Tiwari — Game Developer, Designer &amp; Frontend Engineer</title>
+  <title>Krish Tiwari — Game Designer, UE5 Developer &amp; Frontend Engineer</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
 
   <style>
-    /* =========================================
-       1. DESIGN TOKENS & SIGNAL MODES
-       ========================================= */
     :root {
       --bg: #05060a;
-      --bg-elevated: rgba(12, 15, 24, 0.75);
-      --surface: rgba(18, 22, 34, 0.62);
+      --bg-elevated: rgba(12, 15, 24, 0.78);
+      --surface: rgba(18, 22, 34, 0.66);
       --border: rgba(255, 255, 255, 0.1);
       --border-strong: rgba(255, 255, 255, 0.22);
       --text: #f3f5f9;
@@ -25,8 +22,6 @@
       --accent-2: #a855f7;
       --accent-glow: rgba(56, 189, 248, 0.25);
       --gold: #eab308;
-      --success: #10b981;
-      --danger: #ef4444;
       --font-display: 'Syne', sans-serif;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
@@ -36,27 +31,15 @@
 
     [data-mode="signal"] {
       --bg: #070304;
-      --bg-elevated: rgba(18, 7, 9, 0.8);
-      --surface: rgba(26, 10, 14, 0.65);
+      --bg-elevated: rgba(18, 7, 9, 0.82);
+      --surface: rgba(26, 10, 14, 0.68);
       --accent: #ef4444;
       --accent-2: #f97316;
       --accent-glow: rgba(239, 68, 68, 0.3);
     }
 
-    /* =========================================
-       2. BASE & WEBGL CANVAS
-       ========================================= */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      background: var(--bg);
-      color: var(--text);
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--bg); color: var(--text); }
 
     body {
       font-family: var(--font-sans);
@@ -108,34 +91,15 @@
       z-index: 1;
     }
 
-    main, header, footer {
-      position: relative;
-      z-index: 2;
-    }
+    main, header, footer { position: relative; z-index: 2; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(92%, 1180px); margin: 0 auto; }
+    section { padding: 100px 0; }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .container {
-      width: min(92%, 1180px);
-      margin: 0 auto;
-    }
-
-    section {
-      padding: 105px 0;
-    }
-
-    /* =========================================
-       3. SCROLL PROGRESS & HUD
-       ========================================= */
     .scroll-track {
       position: fixed;
-      top: 0;
-      left: 0;
-      height: 2px;
-      width: 0%;
+      top: 0; left: 0;
+      height: 2px; width: 0%;
       background: linear-gradient(90deg, var(--accent), var(--accent-2));
       z-index: 1000;
       box-shadow: 0 0 12px var(--accent);
@@ -143,28 +107,20 @@
 
     .telemetry-hud {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
+      bottom: 20px; left: 20px;
       z-index: 90;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border-radius: 999px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 999px;
       background: var(--bg-elevated);
       backdrop-filter: blur(14px);
       border: 1px solid var(--border);
       font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
+      font-size: 0.72rem; color: var(--text-muted);
     }
 
     .hud-pulse {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 10px var(--accent);
       animation: pulse 1.8s infinite;
     }
 
@@ -173,1155 +129,233 @@
       50% { opacity: 0.35; transform: scale(0.8); }
     }
 
-    /* =========================================
-       4. NAVIGATION BAR
-       ========================================= */
     header {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(92%, 1180px);
-      z-index: 100;
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      width: min(92%, 1180px); z-index: 100;
       background: var(--bg-elevated);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0 22px;
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: 999px; padding: 0 22px;
     }
 
-    .nav-inner {
-      height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
+    .nav-inner { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; letter-spacing: 0.04em; }
+    .brand-dot { color: var(--accent); }
 
-    .brand {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 1.05rem;
-      letter-spacing: 0.04em;
-    }
-
-    .brand-dot {
-      color: var(--accent);
-    }
-
-    .nav-links {
-      display: flex;
-      list-style: none;
-      gap: 26px;
-      align-items: center;
-    }
-
+    .nav-links { display: flex; list-style: none; gap: 26px; align-items: center; }
     .nav-links a {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      transition: color 0.25s ease;
+      font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); transition: color 0.25s ease;
     }
+    .nav-links a:hover { color: var(--accent); }
 
-    .nav-links a:hover {
-      color: var(--accent);
-    }
-
-    .nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .nav-controls { display: flex; align-items: center; gap: 10px; }
 
     .mode-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px;
+      border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font-mono); font-size: 0.72rem; cursor: pointer;
       transition: all 0.25s ease;
     }
-
-    .mode-pill:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 18px var(--accent-glow);
-    }
+    .mode-pill:hover { border-color: var(--accent); box-shadow: 0 0 18px var(--accent-glow); }
 
     .menu-btn {
-      display: none;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      place-items: center;
+      display: none; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; place-items: center;
     }
 
-    /* =========================================
-       5. TYPOGRAPHY & REVEAL
-       ========================================= */
     .eyebrow {
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
+      font-family: var(--font-mono); font-size: 0.76rem; text-transform: uppercase;
+      letter-spacing: 0.16em; color: var(--accent); display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px;
     }
+    .eyebrow::before { content: ""; width: 24px; height: 1px; background: var(--accent); }
 
-    .eyebrow::before {
-      content: "";
-      width: 24px;
-      height: 1px;
-      background: var(--accent);
-    }
+    .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 44px; flex-wrap: wrap; }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3.1rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.02em; }
+    .section-sub { max-width: 450px; color: var(--text-muted); font-size: 0.95rem; }
 
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      margin-bottom: 44px;
-      flex-wrap: wrap;
-    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.75s var(--ease), transform 0.75s var(--ease); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 4.2vw, 3.1rem);
-      line-height: 1.08;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .section-sub {
-      max-width: 440px;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* =========================================
-       6. HERO SECTION
-       ========================================= */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding-top: 120px;
-      padding-bottom: 60px;
-    }
-
-    .hero-layout {
-      display: grid;
-      grid-template-columns: 1.25fr 0.75fr;
-      gap: 48px;
-      align-items: center;
-    }
+    .hero { min-height: 100vh; display: flex; align-items: center; padding-top: 120px; padding-bottom: 60px; }
+    .hero-layout { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 48px; align-items: center; }
 
     .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
-      margin-bottom: 24px;
+      display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px;
+      border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+      backdrop-filter: blur(12px); font-family: var(--font-mono); font-size: 0.74rem; margin-bottom: 24px;
     }
 
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 6.5vw, 5.1rem);
-      font-weight: 800;
-      line-height: 0.98;
-      letter-spacing: -0.03em;
-      margin-bottom: 20px;
-    }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(2.8rem, 6.5vw, 5.1rem); font-weight: 800; line-height: 0.98; letter-spacing: -0.03em; margin-bottom: 20px; }
+    .hero h1 .outline-text { color: transparent; -webkit-text-stroke: 1.2px var(--border-strong); transition: -webkit-text-stroke 0.3s ease; }
+    .hero h1:hover .outline-text { -webkit-text-stroke: 1.4px var(--accent); }
 
-    .hero h1 .outline-text {
-      color: transparent;
-      -webkit-text-stroke: 1.2px var(--border-strong);
-      transition: -webkit-text-stroke 0.3s ease;
-    }
+    .role-scramble { font-family: var(--font-mono); font-size: clamp(0.95rem, 1.8vw, 1.18rem); color: var(--accent); margin-bottom: 22px; min-height: 28px; }
+    .hero-desc { color: var(--text-muted); font-size: 1.04rem; max-width: 575px; margin-bottom: 34px; }
 
-    .hero h1:hover .outline-text {
-      -webkit-text-stroke: 1.4px var(--accent);
-    }
-
-    .role-scramble {
-      font-family: var(--font-mono);
-      font-size: clamp(0.95rem, 1.8vw, 1.2rem);
-      color: var(--accent);
-      margin-bottom: 22px;
-      min-height: 28px;
-    }
-
-    .hero-desc {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      max-width: 560px;
-      margin-bottom: 34px;
-    }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-
+    .cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      padding: 13px 24px;
-      border-radius: 999px;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      border: 1px solid transparent;
+      display: inline-flex; align-items: center; gap: 9px; padding: 13px 24px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.03em;
+      cursor: pointer; border: 1px solid transparent;
       transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s ease;
     }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; box-shadow: 0 10px 30px var(--accent-glow); }
+    .btn-horror { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; border: 1px solid rgba(248, 113, 113, 0.45); box-shadow: 0 10px 30px rgba(220, 38, 38, 0.35); }
+    .btn-horror:hover { box-shadow: 0 14px 38px rgba(239, 68, 68, 0.55); }
+    .btn-ghost { background: var(--surface); backdrop-filter: blur(12px); border-color: var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--accent); }
 
-    .btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #fff;
-      box-shadow: 0 10px 30px var(--accent-glow);
-    }
-
-    .btn-horror {
-      background: linear-gradient(135deg, #dc2626, #991b1b);
-      color: #fff;
-      border: 1px solid rgba(248, 113, 113, 0.45);
-      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.35);
-    }
-
-    .btn-horror:hover {
-      box-shadow: 0 14px 38px rgba(239, 68, 68, 0.55);
-    }
-
-    .btn-ghost {
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      border-color: var(--border);
-      color: var(--text);
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--accent);
-    }
-
-    .orbital-spec-card {
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .spec-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
-    }
-
-    .spec-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 9px 0;
-      border-bottom: 1px dashed var(--border);
-      font-size: 0.86rem;
-    }
-
+    .orbital-spec-card { background: var(--surface); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .spec-header { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .spec-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 0.86rem; }
     .spec-row:last-of-type { border-bottom: none; }
     .spec-key { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.78rem; }
     .spec-val { font-weight: 600; text-align: right; }
 
-    .orb-controls {
-      margin-top: 18px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    .orb-controls { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
     .chip-btn {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      padding: 6px 11px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
+      font-family: var(--font-mono); font-size: 0.7rem; padding: 6px 11px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-muted);
+      cursor: pointer; transition: all 0.2s ease;
     }
+    .chip-btn.active, .chip-btn:hover { color: var(--text); border-color: var(--accent); background: var(--accent-glow); }
 
-    .chip-btn.active,
-    .chip-btn:hover {
-      color: var(--text);
-      border-color: var(--accent);
-      background: var(--accent-glow);
-    }
-
-    /* =========================================
-       7. UPGRADED INTERACTIVE PROJECT SHOWCASES
-       ========================================= */
-    .filter-strip {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 32px;
-    }
-
+    .filter-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
     .filter-pill {
-      padding: 8px 18px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
-      cursor: pointer;
-      transition: all 0.25s ease;
+      padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-muted); font-family: var(--font-mono);
+      font-size: 0.76rem; cursor: pointer; transition: all 0.25s ease;
     }
+    .filter-pill.active, .filter-pill:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-    .filter-pill.active,
-    .filter-pill:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .projects-showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 26px;
-    }
-
+    .projects-showcase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
     .project-card {
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background: var(--surface); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      display: flex; flex-direction: column;
       transition: border-color 0.35s ease, transform 0.35s var(--ease), box-shadow 0.35s ease;
     }
+    .project-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .project-card.hidden { display: none; }
 
-    .project-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-4px);
-    }
-
-    .project-card.hidden {
-      display: none;
-    }
-
-    /* FEATURED FULL-WIDTH HORROR SPOTLIGHT FOR NULL SIGNAL */
     .featured-horror-card {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-column: 1 / -1; display: grid; grid-template-columns: 1.15fr 0.85fr;
       border: 1px solid rgba(239, 68, 68, 0.35);
       background: linear-gradient(135deg, rgba(16, 6, 8, 0.9), rgba(8, 8, 14, 0.88));
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
     }
+    .featured-horror-card:hover { border-color: rgba(239, 68, 68, 0.78); box-shadow: 0 25px 70px rgba(239, 68, 68, 0.16); }
 
-    .featured-horror-card:hover {
-      border-color: rgba(239, 68, 68, 0.78);
-      box-shadow: 0 25px 70px rgba(239, 68, 68, 0.16);
-    }
-
-    /* Interactive Flashlight Horror Canvas Stage */
-    .horror-stage {
-      position: relative;
-      min-height: 360px;
-      background: #030102;
-      overflow: hidden;
-      cursor: crosshair;
-      border-right: 1px solid rgba(239, 68, 68, 0.22);
-    }
-
-    #horrorCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    .horror-stage { position: relative; min-height: 360px; background: #030102; overflow: hidden; cursor: crosshair; border-right: 1px solid rgba(239, 68, 68, 0.22); }
+    #horrorCanvas { width: 100%; height: 100%; display: block; }
 
     .horror-hud-top {
-      position: absolute;
-      top: 14px;
-      left: 16px;
-      right: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: rgba(248, 113, 113, 0.92);
-      pointer-events: none;
-      text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+      position: absolute; top: 14px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-mono); font-size: 0.7rem; color: rgba(248, 113, 113, 0.92); pointer-events: none;
     }
+    .rec-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(239, 68, 68, 0.45); padding: 4px 10px; border-radius: 999px; }
+    .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: blinkRec 1s infinite; }
+    @keyframes blinkRec { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.15; } }
 
-    .rec-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(239, 68, 68, 0.45);
-      padding: 4px 10px;
-      border-radius: 999px;
-    }
+    .horror-hud-bottom { position: absolute; bottom: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; pointer-events: none; }
+    .flashlight-hint { font-family: var(--font-mono); font-size: 0.68rem; color: rgba(255, 255, 255, 0.72); background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.14); padding: 5px 10px; border-radius: 8px; }
+    #waveCanvas { width: 150px; height: 36px; border-radius: 6px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(239, 68, 68, 0.3); }
 
-    .rec-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #ef4444;
-      animation: blinkRec 1s infinite;
-    }
+    .featured-horror-info { padding: 32px; display: flex; flex-direction: column; justify-content: space-between; }
+    .horror-tag { font-family: var(--font-mono); font-size: 0.72rem; color: #f87171; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+    .horror-title { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.5rem); font-weight: 800; line-height: 1.05; margin-bottom: 12px; }
+    .horror-hook { font-family: var(--font-mono); font-size: 0.84rem; color: #fca5a5; border-left: 2px solid #ef4444; padding-left: 12px; margin-bottom: 16px; }
+    .project-desc { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 18px; }
 
-    @keyframes blinkRec {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0.15; }
-    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+    .tag { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 9px; border-radius: 6px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-muted); }
 
-    .horror-hud-bottom {
-      position: absolute;
-      bottom: 12px;
-      left: 16px;
-      right: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 12px;
-      pointer-events: none;
-    }
-
-    .flashlight-hint {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: rgba(255, 255, 255, 0.72);
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      padding: 5px 10px;
-      border-radius: 8px;
-    }
-
-    #waveCanvas {
-      width: 150px;
-      height: 36px;
-      border-radius: 6px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-
-    .featured-horror-info {
-      padding: 32px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .horror-tag {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: #f87171;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .horror-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.9rem, 3vw, 2.5rem);
-      font-weight: 800;
-      line-height: 1.05;
-      margin-bottom: 12px;
-    }
-
-    .horror-hook {
-      font-family: var(--font-mono);
-      font-size: 0.84rem;
-      color: #fca5a5;
-      border-left: 2px solid #ef4444;
-      padding-left: 12px;
-      margin-bottom: 16px;
-    }
-
-    .project-desc {
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      margin-bottom: 18px;
-    }
-
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 22px;
-    }
-
-    .tag {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      padding: 4px 9px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-    }
-
-    /* =========================================
-       LIVE MINI UI PREVIEWS FOR WEB PROJECTS
-       ========================================= */
-    .ui-preview-stage {
-      height: 235px;
-      background: #070b14;
-      border-bottom: 1px solid var(--border);
-      padding: 16px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .browser-frame {
-      flex: 1;
-      background: #0c1220;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-      transition: transform 0.35s var(--ease);
-    }
-
-    .project-card:hover .browser-frame {
-      transform: translateY(-4px) scale(1.015);
-    }
-
-    .browser-top {
-      height: 26px;
-      background: #11192c;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      gap: 6px;
-    }
-
+    .ui-preview-stage { height: 235px; background: #070b14; border-bottom: 1px solid var(--border); padding: 16px; overflow: hidden; display: flex; flex-direction: column; }
+    .browser-frame { flex: 1; background: #0c1220; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.35s var(--ease); }
+    .project-card:hover .browser-frame { transform: translateY(-4px) scale(1.015); }
+    .browser-top { height: 26px; background: #11192c; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; padding: 0 10px; gap: 6px; }
     .b-dot { width: 7px; height: 7px; border-radius: 50%; }
-    .b-url {
-      margin-left: 8px;
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      background: rgba(0, 0, 0, 0.35);
-      padding: 2px 8px;
-      border-radius: 4px;
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .b-url { margin-left: 8px; font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); background: rgba(0, 0, 0, 0.35); padding: 2px 8px; border-radius: 4px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Mini Admin Dashboard Layout */
-    .mini-dash-body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 54px 1fr;
-      padding: 10px;
-      gap: 10px;
-    }
+    .mini-dash-body { flex: 1; display: grid; grid-template-columns: 54px 1fr; padding: 10px; gap: 10px; }
+    .mini-sidebar { background: rgba(255, 255, 255, 0.03); border-radius: 6px; padding: 8px 6px; display: flex; flex-direction: column; gap: 6px; }
+    .mini-nav-item { height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); }
+    .mini-nav-item.active { background: var(--accent); }
+    .mini-dash-main { display: flex; flex-direction: column; gap: 8px; }
+    .mini-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .mini-kpi { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 6px; padding: 6px; }
+    .mini-kpi span { display: block; font-family: var(--font-mono); font-size: 0.58rem; color: var(--accent); font-weight: 700; }
+    .mini-kpi small { display: block; font-size: 0.5rem; color: var(--text-muted); }
+    .mini-chart-box { flex: 1; background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 6px; padding: 8px; display: flex; align-items: flex-end; gap: 6px; }
+    .mini-bar { flex: 1; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, var(--accent), rgba(56, 189, 248, 0.2)); }
 
-    .mini-sidebar {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
-      padding: 8px 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .ruhyaa-stage { display: grid; grid-template-columns: 1fr 78px; gap: 12px; height: 100%; align-items: center; }
+    .mini-web-hero { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .wire-pill { width: 48px; height: 6px; border-radius: 99px; background: rgba(168, 85, 247, 0.65); }
+    .wire-title { width: 78%; height: 12px; border-radius: 4px; background: rgba(255, 255, 255, 0.8); }
+    .wire-sub { width: 58%; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.2); }
+    .wire-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: auto; }
+    .wire-card { height: 36px; border-radius: 6px; background: rgba(168, 85, 247, 0.14); border: 1px solid rgba(168, 85, 247, 0.35); }
+    .mini-phone { height: 162px; background: #0d111d; border: 2px solid rgba(255, 255, 255, 0.22); border-radius: 14px; padding: 8px 6px; display: flex; flex-direction: column; gap: 6px; transition: transform 0.35s var(--ease); }
+    .project-card:hover .mini-phone { transform: translateY(-6px) rotate(2deg); }
+    .phone-notch { width: 24px; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.25); margin: 0 auto 4px; }
 
-    .mini-nav-item {
-      height: 7px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.1);
-    }
+    .project-content { padding: 24px; display: flex; flex-direction: column; flex: 1; }
+    .project-cat-mini { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .project-title { font-family: var(--font-display); font-size: 1.32rem; font-weight: 700; margin-bottom: 8px; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: auto; border-top: 1px solid var(--border); gap: 12px; }
+    .card-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .card-link:hover { text-decoration: underline; }
 
-    .mini-nav-item.active {
-      background: var(--accent);
-    }
+    .exp-grid, .certs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .certs-grid { gap: 24px; margin-top: 28px; }
+    .timeline-card, .cert-card { background: var(--surface); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: border-color 0.3s ease, transform 0.3s var(--ease); }
+    .timeline-card:hover, .cert-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .timeline-meta { font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); margin-bottom: 8px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .timeline-role { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; }
+    .timeline-org { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 16px; }
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 9px; color: var(--text-muted); font-size: 0.9rem; }
+    .bullet-list li { padding-left: 18px; position: relative; }
+    .bullet-list li::before { content: "▹"; position: absolute; left: 0; color: var(--accent); }
 
-    .mini-dash-main {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .cert-card { border-color: rgba(234, 179, 8, 0.28); background: linear-gradient(145deg, rgba(24, 24, 32, 0.8), rgba(14, 14, 20, 0.9)); }
+    .cert-seal { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold); border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.08); padding: 4px 10px; border-radius: 999px; margin-bottom: 14px; }
+    .cert-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+    .cert-details { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px; }
+    .cert-id { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.04); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); word-break: break-all; margin-bottom: 14px; }
 
-    .mini-kpis {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-    }
+    .diag-panel { background: var(--surface); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .diag-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .diag-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+    .skill-node { padding: 18px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); }
+    .skill-top { font-size: 0.96rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .skill-note { font-size: 0.86rem; color: var(--text-muted); }
 
-    .mini-kpi {
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.22);
-      border-radius: 6px;
-      padding: 6px;
-    }
-
-    .mini-kpi span {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 0.58rem;
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .mini-kpi small {
-      display: block;
-      font-size: 0.5rem;
-      color: var(--text-muted);
-    }
-
-    .mini-chart-box {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 6px;
-      padding: 8px;
-      display: flex;
-      align-items: flex-end;
-      gap: 6px;
-    }
-
-    .mini-bar {
-      flex: 1;
-      border-radius: 3px 3px 0 0;
-      background: linear-gradient(180deg, var(--accent), rgba(56, 189, 248, 0.2));
-      transition: height 0.45s var(--ease);
-    }
-
-    .project-card:hover .mini-bar:nth-child(odd) {
-      filter: brightness(1.25);
-    }
-
-    /* Mini Ruhyaa Multi-Device UI Preview */
-    .ruhyaa-stage {
-      display: grid;
-      grid-template-columns: 1fr 78px;
-      gap: 12px;
-      height: 100%;
-      align-items: center;
-    }
-
-    .mini-web-hero {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .wire-pill {
-      width: 48px;
-      height: 6px;
-      border-radius: 99px;
-      background: rgba(168, 85, 247, 0.65);
-    }
-
-    .wire-title {
-      width: 78%;
-      height: 12px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.8);
-    }
-
-    .wire-sub {
-      width: 58%;
-      height: 7px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .wire-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-top: auto;
-    }
-
-    .wire-card {
-      height: 36px;
-      border-radius: 6px;
-      background: rgba(168, 85, 247, 0.14);
-      border: 1px solid rgba(168, 85, 247, 0.35);
-    }
-
-    .mini-phone {
-      height: 162px;
-      background: #0d111d;
-      border: 2px solid rgba(255, 255, 255, 0.22);
-      border-radius: 14px;
-      padding: 8px 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-      transition: transform 0.35s var(--ease);
-    }
-
-    .project-card:hover .mini-phone {
-      transform: translateY(-6px) rotate(2deg);
-    }
-
-    .phone-notch {
-      width: 24px;
-      height: 4px;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.25);
-      margin: 0 auto 4px;
-    }
-
-    .project-content {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .project-cat-mini {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-    }
-
-    .project-title {
-      font-family: var(--font-display);
-      font-size: 1.32rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 14px;
-      margin-top: auto;
-      border-top: 1px solid var(--border);
-      gap: 12px;
-    }
-
-    .card-link {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--accent);
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .card-link:hover {
-      text-decoration: underline;
-    }
-
-    /* =========================================
-       8. EXPERIENCE & ENGRAVED CREDENTIALS
-       ========================================= */
-    .exp-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-
-    .timeline-card,
-    .cert-card {
-      background: var(--surface);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      transition: border-color 0.3s ease, transform 0.3s var(--ease);
-    }
-
-    .timeline-card:hover,
-    .cert-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-4px);
-    }
-
-    .timeline-meta {
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
-      color: var(--accent);
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .timeline-role {
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .timeline-org {
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      margin-bottom: 16px;
-    }
-
-    .bullet-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .bullet-list li {
-      padding-left: 18px;
-      position: relative;
-    }
-
-    .bullet-list li::before {
-      content: "▹";
-      position: absolute;
-      left: 0;
-      color: var(--accent);
-    }
-
-    .certs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 28px;
-    }
-
-    .cert-card {
-      border-color: rgba(234, 179, 8, 0.28);
-      background: linear-gradient(145deg, rgba(24, 24, 32, 0.8), rgba(14, 14, 20, 0.9));
-    }
-
-    .cert-seal {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--gold);
-      border: 1px solid rgba(234, 179, 8, 0.35);
-      background: rgba(234, 179, 8, 0.08);
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-bottom: 14px;
-    }
-
-    .cert-title {
-      font-family: var(--font-display);
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .cert-details {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-
-    .cert-id {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.04);
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      word-break: break-all;
-      margin-bottom: 14px;
-    }
-
-    /* =========================================
-       9. SKILLS DIAGNOSTICS PANEL
-       ========================================= */
-    .diag-panel {
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-    }
-
-    .diag-tabs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 26px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .diag-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 18px;
-    }
-
-    .skill-node {
-      padding: 16px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border);
-    }
-
-    .skill-top {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .skill-pct {
-      font-family: var(--font-mono);
-      color: var(--accent);
-      font-size: 0.8rem;
-    }
-
-    .bar-track {
-      height: 5px;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      border-radius: 999px;
-      transition: width 0.65s var(--ease);
-    }
-
-    /* =========================================
-       10. CONTACT, MODAL & TOAST
-       ========================================= */
-    .contact-box {
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 40px;
-      display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
-      gap: 40px;
-    }
-
-    .email-copy-box {
-      margin-top: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      flex-wrap: wrap;
-    }
-
+    .contact-box { background: var(--surface); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 40px; }
+    .email-copy-box { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.82rem; flex-wrap: wrap; }
     .form-field { margin-bottom: 16px; }
-    .form-field label {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
-      color: var(--text-muted);
-      margin-bottom: 7px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .input-el {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(5, 6, 10, 0.65);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 0.94rem;
-    }
-
+    .form-field label { display: block; font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .input-el { width: 100%; padding: 12px 14px; border-radius: 10px; background: rgba(5, 6, 10, 0.65); border: 1px solid var(--border); color: var(--text); font-family: var(--font-sans); font-size: 0.94rem; }
     .input-el:focus { outline: none; border-color: var(--accent); }
     textarea.input-el { min-height: 115px; resize: vertical; }
 
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 3, 7, 0.78);
-      backdrop-filter: blur(10px);
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      z-index: 300;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 3, 7, 0.78); backdrop-filter: blur(10px); display: grid; place-items: center; padding: 20px; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-backdrop.open { opacity: 1; pointer-events: auto; }
-
-    .modal-panel {
-      background: #0b0e17;
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius);
-      max-width: 600px;
-      width: 100%;
-      padding: 30px;
-      position: relative;
-      transform: scale(0.95);
-      transition: transform 0.3s var(--ease);
-    }
-
+    .modal-panel { background: #0b0e17; border: 1px solid var(--border-strong); border-radius: var(--radius); max-width: 600px; width: 100%; padding: 30px; position: relative; transform: scale(0.95); transition: transform 0.3s var(--ease); }
     .modal-backdrop.open .modal-panel { transform: scale(1); }
+    .modal-close { position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1.1rem; }
 
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 1.1rem;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0d131f;
-      border: 1px solid var(--accent);
-      color: var(--text);
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      z-index: 400;
-      transform: translateY(120px);
-      opacity: 0;
-      transition: all 0.35s var(--ease);
-    }
-
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #0d131f; border: 1px solid var(--accent); color: var(--text); padding: 12px 18px; border-radius: 12px; font-family: var(--font-mono); font-size: 0.8rem; z-index: 400; transform: translateY(120px); opacity: 0; transition: all 0.35s var(--ease); }
     .toast.show { transform: translateY(0); opacity: 1; }
 
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 0 70px;
-      text-align: center;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
+    footer { border-top: 1px solid var(--border); padding: 32px 0 70px; text-align: center; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); }
 
-    /* =========================================
-       11. RESPONSIVE
-       ========================================= */
     @media (max-width: 900px) {
-      .hero-layout,
-      .projects-showcase-grid,
-      .featured-horror-card,
-      .exp-grid,
-      .certs-grid,
-      .contact-box {
-        grid-template-columns: 1fr;
-      }
-
-      .horror-stage {
-        min-height: 290px;
-        border-right: none;
-        border-bottom: 1px solid rgba(239, 68, 68, 0.22);
-      }
-
+      .hero-layout, .projects-showcase-grid, .featured-horror-card, .exp-grid, .certs-grid, .contact-box { grid-template-columns: 1fr; }
+      .horror-stage { min-height: 290px; border-right: none; border-bottom: 1px solid rgba(239, 68, 68, 0.22); }
       .menu-btn { display: grid; }
-
-      .nav-links {
-        position: fixed;
-        top: 86px;
-        left: 4%;
-        width: 92%;
-        background: #0b0e17;
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        flex-direction: column;
-        padding: 22px;
-        gap: 16px;
-        display: none;
-      }
-
+      .nav-links { position: fixed; top: 86px; left: 4%; width: 92%; background: #0b0e17; border: 1px solid var(--border); border-radius: 18px; flex-direction: column; padding: 22px; gap: 16px; display: none; }
       .nav-links.open { display: flex; }
       .telemetry-hud { display: none; }
     }
@@ -1341,7 +375,6 @@
     <span id="hudDepth">SCROLL 00%</span>
   </div>
 
-  <!-- NAVIGATION -->
   <header>
     <div class="nav-inner">
       <a href="#home" class="brand">KRISH<span class="brand-dot">.</span>TIWARI</a>
@@ -1365,13 +398,12 @@
   </header>
 
   <main>
-    <!-- HERO -->
     <section id="home" class="hero">
       <div class="container hero-layout">
         <div class="reveal">
           <div class="hero-badge">
             <span class="hud-pulse"></span>
-            SOLO HORROR PLAYTEST LIVE &bull; BACHELOR'S IN IT
+            NULL SIGNAL v0.2 PLAYTEST LIVE &bull; UE5 GAME DESIGN &amp; DEV
           </div>
 
           <h1>
@@ -1379,41 +411,41 @@
             <span class="outline-text">TIWARI</span>
           </h1>
 
-          <div class="role-scramble" id="scrambleRole">&gt; GAME DEVELOPER &amp; DESIGNER_</div>
+          <div class="role-scramble" id="scrambleRole">&gt; GAME DESIGNER &amp; UE5 DEVELOPER_</div>
 
           <p class="hero-desc">
-            Information Technology undergraduate crafting atmospheric horror worlds in <strong>Unreal Engine 5</strong> and high-craft interactive interfaces for the web. Currently building my solo horror project <strong>Null Signal</strong>.
+            Game designer and developer building tension-driven horror systems, level pacing, and playable prototypes in <strong>Unreal Engine 5</strong>, backed by frontend engineering experience and a B.Sc. in IT.
           </p>
 
           <div class="cta-row">
             <a href="https://krishtiwari0020.itch.io/null-signal-playtest" target="_blank" rel="noopener" class="btn btn-horror">
-              ▶ Play Null Signal Demo
+              ▶ Play Null Signal v0.2
             </a>
-            <a href="#projects" class="btn btn-ghost">Explore Projects ↓</a>
+            <a href="#projects" class="btn btn-ghost">Design &amp; Builds ↓</a>
           </div>
         </div>
 
         <div class="orbital-spec-card reveal">
           <div class="spec-header">
-            <span>STUDIO TELEMETRY // v2.6</span>
+            <span>DESIGN &amp; BUILD DOSSIER // v2.6</span>
             <span>UE5 + WEB</span>
           </div>
 
           <div class="spec-row">
-            <span class="spec-key">STATUS</span>
-            <span class="spec-val">IT Student &amp; Indie Dev</span>
+            <span class="spec-key">FOCUS</span>
+            <span class="spec-val">Gameplay Systems, Pacing &amp; Horror</span>
           </div>
           <div class="spec-row">
-            <span class="spec-key">ACTIVE BUILD</span>
-            <span class="spec-val" style="color: var(--accent);">Null Signal (Horror)</span>
+            <span class="spec-key">PLAYABLE BUILD</span>
+            <span class="spec-val" style="color: var(--accent);">Null Signal v0.2 (Itch.io)</span>
           </div>
           <div class="spec-row">
-            <span class="spec-key">PREV. INTERNSHIP</span>
+            <span class="spec-key">INTERNSHIP</span>
             <span class="spec-val">Frontend Dev @ Ruhyaa</span>
           </div>
           <div class="spec-row">
-            <span class="spec-key">ENGINE / STACK</span>
-            <span class="spec-val">UE5 Blueprints &bull; Web UI</span>
+            <span class="spec-key">CORE ENGINE</span>
+            <span class="spec-val">Unreal Engine 5 (Blueprints / C++)</span>
           </div>
 
           <div class="orb-controls">
@@ -1425,9 +457,6 @@
       </div>
     </section>
 
-    <!-- =====================================
-         PROJECTS SHOWCASE (INTERACTIVE PREVIEWS)
-         ===================================== -->
     <section id="projects">
       <div class="container">
         <div class="section-head reveal">
@@ -1436,19 +465,18 @@
             <h2 class="section-title">Games &amp; Web Engineering</h2>
           </div>
           <p class="section-sub">
-            Move your cursor inside <strong>Null Signal</strong> to sweep the flashlight through the corridor, or inspect my live web interfaces below.
+            Move your cursor inside <strong>Null Signal</strong> to sweep the flashlight beam, or inspect my case studies and live web builds below.
           </p>
         </div>
 
         <div class="filter-strip reveal">
           <button class="filter-pill active" data-filter="all">All Works</button>
-          <button class="filter-pill" data-filter="game">Horror / Game Dev</button>
+          <button class="filter-pill" data-filter="game">Horror / Game Design</button>
           <button class="filter-pill" data-filter="web">Frontend &amp; UI</button>
         </div>
 
         <div class="projects-showcase-grid">
 
-          <!-- 1. FEATURED HORROR GAME: NULL SIGNAL -->
           <article class="project-card featured-horror-card reveal" data-category="game">
             <div class="horror-stage" id="horrorStage">
               <canvas id="horrorCanvas"></canvas>
@@ -1466,20 +494,20 @@
 
             <div class="featured-horror-info">
               <div>
-                <div class="horror-tag">Featured Solo Horror Project // Unreal Engine 5</div>
+                <div class="horror-tag">Solo Horror Project // Unreal Engine 5</div>
                 <h3 class="horror-title">NULL SIGNAL</h3>
                 <p class="horror-hook">
-                  "The broadcast stopped at 03:14 AM... yet something is still transmitting from inside."
+                  "Designed around slow-burn dread, diegetic audio/visual cues, and tight room-to-room pacing."
                 </p>
                 <p class="project-desc">
-                  A solo-developed psychological horror experience built completely from scratch. Step into pitch-black tension, navigate eerie corridors with limited light, and survive the signal distortion. Playtest build live on Itch.io.
+                  Solo-developed first-person psychological horror prototype built in Unreal Engine 5. Focused on tension-release pacing, spatial sightlines, sanity/feedback states, inspectable narrative clues, and a packaged v0.2 playtest build on Itch.io.
                 </p>
                 <div class="tag-row">
                   <span class="tag">Unreal Engine 5</span>
-                  <span class="tag">UE5 Blueprints</span>
-                  <span class="tag">Atmospheric Horror</span>
-                  <span class="tag">Solo Developer</span>
-                  <span class="tag">Playable Demo</span>
+                  <span class="tag">Gameplay &amp; Pacing</span>
+                  <span class="tag">Level Flow</span>
+                  <span class="tag">Blueprints &amp; C++</span>
+                  <span class="tag">Playtest v0.2</span>
                 </div>
               </div>
 
@@ -1488,13 +516,12 @@
                   ▶ Play Demo on Itch.io ↗
                 </a>
                 <button class="btn btn-ghost" onclick="openDossier('null-signal')">
-                  Inspect Case Study
+                  Design Breakdown
                 </button>
               </div>
             </div>
           </article>
 
-          <!-- 2. ADMIN DASHBOARD: LIVE MINI UI PREVIEW -->
           <article class="project-card reveal" data-category="web">
             <div class="ui-preview-stage">
               <div class="browser-frame">
@@ -1535,12 +562,12 @@
               <div class="project-cat-mini">College Web Engineering &bull; Deployed</div>
               <h3 class="project-title">Modern Admin Dashboard</h3>
               <p class="project-desc">
-                Interactive analytics &amp; management dashboard built for my Bachelor's in IT coursework, featuring responsive grids, KPI cards, and clean UI hierarchy.
+                Interactive analytics &amp; management dashboard built during my IT degree, focusing on scannable information hierarchy, clear state grouping, and responsive layout grids.
               </p>
               <div class="tag-row">
-                <span class="tag">Frontend UI</span>
-                <span class="tag">Analytics Layout</span>
-                <span class="tag">Responsive</span>
+                <span class="tag">Information Hierarchy</span>
+                <span class="tag">Responsive UI</span>
+                <span class="tag">Frontend</span>
                 <span class="tag">Vercel</span>
               </div>
               <div class="card-footer">
@@ -1550,7 +577,6 @@
             </div>
           </article>
 
-          <!-- 3. RUHYAA INTERNSHIP: RESPONSIVE DEVICE PREVIEW -->
           <article class="project-card reveal" data-category="web">
             <div class="ui-preview-stage" style="background: #0a0814;">
               <div class="ruhyaa-stage">
@@ -1588,12 +614,12 @@
               <div class="project-cat-mini">3-Month Frontend Internship &bull; Shipped</div>
               <h3 class="project-title">Ruhyaa Web Platform</h3>
               <p class="project-desc">
-                Designed and implemented responsive, user-friendly web interfaces and modular frontend components during my 3-month Frontend Developer internship at Ruhyaa.
+                Built responsive web interfaces and reusable frontend components during a 3-month internship at Ruhyaa, iterating on user flow and layout consistency with the team.
               </p>
               <div class="tag-row">
-                <span class="tag">Frontend Dev</span>
-                <span class="tag">Responsive UX</span>
+                <span class="tag">User Flow &amp; UX</span>
                 <span class="tag">UI Components</span>
+                <span class="tag">Frontend Dev</span>
                 <span class="tag">Team Delivery</span>
               </div>
               <div class="card-footer">
@@ -1607,7 +633,6 @@
       </div>
     </section>
 
-    <!-- EXPERIENCE & CREDENTIALS -->
     <section id="experience">
       <div class="container">
         <div class="section-head reveal">
@@ -1616,7 +641,7 @@
             <h2 class="section-title">Experience &amp; Verified Certificates</h2>
           </div>
           <p class="section-sub">
-            Production frontend internship paired with intensive Unreal Engine 5 Blueprint mastery.
+            Hands-on frontend delivery paired with focused Unreal Engine 5 game design and prototyping.
           </p>
         </div>
 
@@ -1629,10 +654,10 @@
             <h3 class="timeline-role">Frontend Developer Intern</h3>
             <div class="timeline-org">Ruhyaa &bull; Founders: Rudra Darji &amp; Shreeya Jagtap</div>
             <ul class="bullet-list">
-              <li>Designed and implemented responsive, user-friendly web interfaces across Ruhyaa's website.</li>
-              <li>Built modular frontend components to improve maintainability and visual consistency.</li>
-              <li>Enhanced overall website functionality and user experience through iterative UI refinements.</li>
-              <li>Collaborated with the team to deliver production features matching project requirements.</li>
+              <li>Designed and implemented responsive web interfaces across Ruhyaa's website.</li>
+              <li>Built modular frontend components to keep layouts consistent and maintainable.</li>
+              <li>Refined UI flows and responsiveness based on iterative team feedback.</li>
+              <li>Collaborated with team members to ship production features on schedule.</li>
             </ul>
           </article>
 
@@ -1642,11 +667,11 @@
               <span>IN PROGRESS</span>
             </div>
             <h3 class="timeline-role">Bachelor's in Information Technology</h3>
-            <div class="timeline-org">College Studies &bull; Web Systems &amp; Interactive Design</div>
+            <div class="timeline-org">College Studies &bull; Software, Systems &amp; Interactive Design</div>
             <ul class="bullet-list">
-              <li>Building strong foundations in software engineering, web architecture, and UI design.</li>
-              <li>Built and deployed an end-to-end Admin Dashboard web application on Vercel.</li>
-              <li>Combining academic IT principles with solo horror game development in Unreal Engine 5.</li>
+              <li>Developing strong foundations in software engineering, logic, and system structure.</li>
+              <li>Built and deployed an interactive Admin Dashboard application on Vercel.</li>
+              <li>Applying iterative prototyping and player-first design in Unreal Engine 5.</li>
             </ul>
           </article>
         </div>
@@ -1665,7 +690,7 @@
             <div class="cert-seal">★ UDEMY CERTIFICATION // 42.5 HOURS</div>
             <h3 class="cert-title">Unreal Engine 5: All in one UE5 master Blueprint</h3>
             <p class="cert-details">
-              Completed 42.5 total hours of Unreal Engine 5 Blueprint scripting and game systems training instructed by <strong>Unreal magic</strong> on Oct. 26, 2026.
+              Completed 42.5 total hours of Unreal Engine 5 Blueprint scripting and gameplay systems training instructed by <strong>Unreal magic</strong> on Oct. 26, 2026.
             </p>
             <div class="cert-id">CERT ID: UC-a79e971f-234d-443f-a093-f13dfaedddf5 &bull; REF: 0004</div>
             <a href="https://ude.my/UC-a79e971f-234d-443f-a093-f13dfaedddf5" target="_blank" rel="noopener" class="card-link">
@@ -1676,31 +701,29 @@
       </div>
     </section>
 
-    <!-- SKILLS DIAGNOSTICS -->
     <section id="skills">
       <div class="container">
         <div class="section-head reveal">
           <div>
-            <span class="eyebrow">04 // Diagnostics</span>
-            <h2 class="section-title">Technical Arsenal</h2>
+            <span class="eyebrow">04 // Design &amp; Technical Stack</span>
+            <h2 class="section-title">How I Build &amp; Design</h2>
           </div>
           <p class="section-sub">
-            Switch tabs to inspect my capabilities across Game Development, Frontend Engineering, and Tools.
+            Switch tabs to see how I approach gameplay design, frontend UI, and build/shipping workflows.
           </p>
         </div>
 
         <div class="diag-panel reveal">
           <div class="diag-tabs">
-            <button class="filter-pill active" data-skill-tab="gamedev">Game Dev &amp; UE5</button>
+            <button class="filter-pill active" data-skill-tab="gamedev">Game Design &amp; UE5</button>
             <button class="filter-pill" data-skill-tab="frontend">Frontend &amp; UI</button>
-            <button class="filter-pill" data-skill-tab="workflow">IT &amp; Workflow</button>
+            <button class="filter-pill" data-skill-tab="workflow">Pipeline &amp; Workflow</button>
           </div>
           <div class="diag-grid" id="skillsGrid"></div>
         </div>
       </div>
     </section>
 
-    <!-- CONTACT -->
     <section id="contact">
       <div class="container">
         <div class="section-head reveal">
@@ -1709,7 +732,7 @@
             <h2 class="section-title">Let's Build Something</h2>
           </div>
           <p class="section-sub">
-            Open to game design collaborations, frontend internships/roles, and creative web projects.
+            Open to game design internships, UE5 prototyping roles, and collaborative projects.
           </p>
         </div>
 
@@ -1717,11 +740,11 @@
           <div>
             <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 12px;">Direct Uplink</h3>
             <p style="color: var(--text-muted); font-size: 0.95rem;">
-              Want to share feedback on <strong>Null Signal</strong>, discuss a frontend role, or collaborate on an Unreal Engine project? Drop a message below.
+              Want to discuss a game design internship, test <strong>Null Signal</strong>, or talk shop on horror pacing and UE5 systems? Reach out directly.
             </p>
 
             <div class="email-copy-box">
-              <span>tiwarikrish0020@gmail.com</span>
+              <span>krishtiwari002016@gmail.com</span>
               <button class="chip-btn" id="copyEmailBtn" type="button">Copy Email</button>
             </div>
 
@@ -1742,7 +765,7 @@
             </div>
             <div class="form-field">
               <label for="senderMsg">Message</label>
-              <textarea id="senderMsg" class="input-el" placeholder="Tell me about your project or playtest feedback..." required></textarea>
+              <textarea id="senderMsg" class="input-el" placeholder="Tell me about the role, team, or playtest feedback..." required></textarea>
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
               Transmit Message →
@@ -1755,11 +778,10 @@
 
   <footer>
     <div class="container">
-      KRISH TIWARI &bull; GAME DEVELOPER &amp; FRONTEND ENGINEER &bull; <span id="year"></span>
+      KRISH TIWARI &bull; GAME DESIGNER &amp; DEVELOPER &bull; <span id="year"></span>
     </div>
   </footer>
 
-  <!-- DOSSIER MODAL -->
   <div class="modal-backdrop" id="projectModal" aria-hidden="true">
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
@@ -1778,31 +800,30 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script>
-    /* =========================================
-       1. DOSSIER & SKILLS DATA
-       ========================================= */
+    const CONTACT_EMAIL = "krishtiwari002016@gmail.com";
+
     const dossierData = {
       "null-signal": {
         categoryLabel: "SOLO HORROR GAME // UNREAL ENGINE 5",
-        title: "Null Signal",
-        fullDesc: "Null Signal is my independent solo horror game project currently in active development. Built from scratch using Unreal Engine 5 Blueprints, atmospheric lighting, custom level flow, and tension-driven pacing. A playable playtest build is live now on Itch.io for community feedback.",
-        tags: ["Unreal Engine 5", "Blueprints", "Horror Design", "Solo Dev", "Itch.io"],
+        title: "Null Signal (Playtest v0.2)",
+        fullDesc: "Null Signal is my solo psychological horror project in Unreal Engine 5. As designer and developer, I shaped room-to-room tension pacing, audio/trigger beats, inspectable narrative objects, and sanity-driven feedback, packaging a v0.2 playable Windows demo for playtesting on Itch.io.",
+        tags: ["Unreal Engine 5", "Horror Pacing", "Level Flow", "Blueprints & C++", "Itch.io v0.2"],
         liveUrl: "https://krishtiwari0020.itch.io/null-signal-playtest",
         liveLabel: "Play Demo on Itch.io ↗"
       },
       "admin-dashboard": {
         categoryLabel: "COLLEGE WEB PROJECT",
         title: "Modern Admin Dashboard",
-        fullDesc: "Designed and engineered an interactive admin dashboard interface focusing on clean visual hierarchy, responsive layout grids, intuitive data cards, and fast client-side navigation. Hosted live on Vercel.",
-        tags: ["Frontend UI", "Responsive Design", "Dashboard", "Vercel"],
+        fullDesc: "Designed and built an interactive dashboard interface focused on clear data hierarchy, quick visual scanning, and responsive layout behavior. Deployed live on Vercel.",
+        tags: ["UI Hierarchy", "Responsive Layout", "Frontend", "Vercel"],
         liveUrl: "https://admin-dashboard-design-bice.vercel.app/",
         liveLabel: "Open Live App ↗"
       },
       "ruhyaa-web": {
         categoryLabel: "PRODUCTION INTERNSHIP",
         title: "Ruhyaa Website Enhancements",
-        fullDesc: "During my 3-month Frontend Developer internship at Ruhyaa (April–June 2026), I collaborated with the team and founders to develop modular frontend components, elevate site responsiveness, and deliver cleaner user experiences aligned with project specs.",
-        tags: ["Frontend Dev", "UI Components", "UX Optimization", "Team Delivery"],
+        fullDesc: "During my 3-month Frontend Developer internship at Ruhyaa (April–June 2026), I built responsive interfaces and reusable UI components while iterating on layout clarity and user experience with the team.",
+        tags: ["Frontend Dev", "UI Components", "UX Flow", "Team Collaboration"],
         liveUrl: "#experience",
         liveLabel: "View Credential ↓"
       }
@@ -1810,28 +831,25 @@
 
     const skillsData = {
       gamedev: [
-        { name: "Unreal Engine 5 & Blueprints", level: 88 },
-        { name: "Horror Level & Atmosphere Design", level: 85 },
-        { name: "Gameplay Systems & Prototyping", level: 82 },
-        { name: "Lighting, Post-Processing & Pacing", level: 80 }
+        { name: "Gameplay Loops & Tension Pacing", note: "Structuring build-up, audio/visual cues, and player anticipation in horror scenes." },
+        { name: "Level Flow & Spatial Sightlines", note: "Guiding player movement and exploration using lighting, framing, and trigger beats." },
+        { name: "UE5 Blueprints & Rapid Prototyping", note: "Iterating quickly on mechanics, interactive objects, UI states, and playtest loops." },
+        { name: "Atmosphere & Environmental Storytelling", note: "Combining lighting, props, and sound cues to support mood without clutter." }
       ],
       frontend: [
-        { name: "HTML5 / Modern CSS3", level: 92 },
-        { name: "JavaScript (ES6+) & Interactivity", level: 86 },
-        { name: "Responsive UI / Component Design", level: 90 },
-        { name: "Dashboard & Web App Interfaces", level: 85 }
+        { name: "HTML5 & Modern CSS3", note: "Responsive layouts, visual hierarchy, and clean component styling." },
+        { name: "JavaScript (ES6+) & Interactive UI", note: "State-driven UI interactions, dynamic panels, and canvas/DOM polish." },
+        { name: "Component & Layout Consistency", note: "Reusable UI patterns tested across desktop and mobile viewports." },
+        { name: "Dashboard & Web Interfaces", note: "Organizing metrics, navigation, and actions for easy user scanning." }
       ],
       workflow: [
-        { name: "Bachelor's in IT Core Concepts", level: 84 },
-        { name: "Itch.io Playtest & Build Packaging", level: 88 },
-        { name: "Git, GitHub & Vercel Deployment", level: 85 },
-        { name: "Team Collaboration & Agile Delivery", level: 87 }
+        { name: "Build Packaging & Playtest Iteration", note: "Packaging UE5 Windows builds and shipping updates via Butler to Itch.io." },
+        { name: "Git, GitHub & Vercel", note: "Version control and live deployment for web projects and portfolio iterations." },
+        { name: "Documentation & Notes", note: "Keeping design notes, flow ideas, and task checklists structured across iterations." },
+        { name: "Team Feedback & Collaboration", note: "Working with teammates and founders to refine features from feedback." }
       ]
     };
 
-    /* =========================================
-       2. INTERACTIVE HORROR FLASHLIGHT CANVAS (NULL SIGNAL)
-       ========================================= */
     (function initHorrorStage() {
       const stage = document.getElementById("horrorStage");
       const hCanvas = document.getElementById("horrorCanvas");
@@ -1839,12 +857,8 @@
       const wCanvas = document.getElementById("waveCanvas");
       const wCtx = wCanvas.getContext("2d");
 
-      let lightX = 0.5;
-      let lightY = 0.5;
-      let targetX = 0.5;
-      let targetY = 0.5;
-      let isHovering = false;
-      let time = 0;
+      let lightX = 0.5, lightY = 0.5, targetX = 0.5, targetY = 0.5;
+      let isHovering = false, time = 0;
 
       stage.addEventListener("mousemove", e => {
         const rect = stage.getBoundingClientRect();
@@ -1852,10 +866,7 @@
         targetY = (e.clientY - rect.top) / rect.height;
         isHovering = true;
       });
-
-      stage.addEventListener("mouseleave", () => {
-        isHovering = false;
-      });
+      stage.addEventListener("mouseleave", () => { isHovering = false; });
 
       function resizeHorror() {
         hCanvas.width = stage.clientWidth;
@@ -1866,56 +877,34 @@
 
       function renderHorrorScene() {
         time += 0.02;
-        const w = hCanvas.width;
-        const h = hCanvas.height;
-
-        // Auto sweep flashlight smoothly when user isn't hovering
+        const w = hCanvas.width, h = hCanvas.height;
         if (!isHovering) {
           targetX = 0.5 + Math.sin(time * 0.7) * 0.28;
           targetY = 0.48 + Math.cos(time * 1.1) * 0.14;
         }
         lightX += (targetX - lightX) * 0.12;
         lightY += (targetY - lightY) * 0.12;
+        const fx = lightX * w, fy = lightY * h;
 
-        const fx = lightX * w;
-        const fy = lightY * h;
-
-        // 1. Pitch dark corridor background
         hCtx.fillStyle = "#040203";
         hCtx.fillRect(0, 0, w, h);
 
-        // 2. Perspective hallway lines + ominous doorway
-        const vx = w * 0.5;
-        const vy = h * 0.46;
-        const doorW = w * 0.22;
-        const doorH = h * 0.54;
-        const dx = vx - doorW / 2;
-        const dy = vy - doorH / 2 + 12;
+        const vx = w * 0.5, vy = h * 0.46;
+        const doorW = w * 0.22, doorH = h * 0.54;
+        const dx = vx - doorW / 2, dy = vy - doorH / 2 + 12;
 
         hCtx.strokeStyle = "rgba(180, 40, 40, 0.22)";
         hCtx.lineWidth = 1.5;
-        // Corridor perspective lines
-        [
-          [0, 0, dx, dy],
-          [w, 0, dx + doorW, dy],
-          [0, h, dx, dy + doorH],
-          [w, h, dx + doorW, dy + doorH]
-        ].forEach(([x1, y1, x2, y2]) => {
-          hCtx.beginPath();
-          hCtx.moveTo(x1, y1);
-          hCtx.lineTo(x2, y2);
-          hCtx.stroke();
+        [[0, 0, dx, dy], [w, 0, dx + doorW, dy], [0, h, dx, dy + doorH], [w, h, dx + doorW, dy + doorH]].forEach(([x1, y1, x2, y2]) => {
+          hCtx.beginPath(); hCtx.moveTo(x1, y1); hCtx.lineTo(x2, y2); hCtx.stroke();
         });
 
-        // Doorframe
         hCtx.fillStyle = "#090204";
         hCtx.fillRect(dx, dy, doorW, doorH);
         hCtx.strokeStyle = "rgba(239, 68, 68, 0.32)";
         hCtx.strokeRect(dx, dy, doorW, doorH);
 
-        // 3. Cryptic wall message revealed when flashlight shines nearby
-        const distToLeftWall = Math.hypot(fx - w * 0.2, fy - h * 0.55);
-        const wallAlpha = Math.max(0, 1 - distToLeftWall / (w * 0.32));
+        const wallAlpha = Math.max(0, 1 - Math.hypot(fx - w * 0.2, fy - h * 0.55) / (w * 0.32));
         if (wallAlpha > 0.05) {
           hCtx.save();
           hCtx.font = "700 13px 'JetBrains Mono', monospace";
@@ -1925,9 +914,7 @@
           hCtx.restore();
         }
 
-        // Right wall scratches / frequency number
-        const distToRightWall = Math.hypot(fx - w * 0.82, fy - h * 0.45);
-        const rightAlpha = Math.max(0, 1 - distToRightWall / (w * 0.32));
+        const rightAlpha = Math.max(0, 1 - Math.hypot(fx - w * 0.82, fy - h * 0.45) / (w * 0.32));
         if (rightAlpha > 0.05) {
           hCtx.save();
           hCtx.font = "700 12px 'JetBrains Mono', monospace";
@@ -1936,35 +923,20 @@
           hCtx.restore();
         }
 
-        // 4. Shadowy Entity inside doorway (reacts to flashlight!)
-        const distToDoor = Math.hypot(fx - vx, fy - vy);
-        const entityReveal = Math.max(0.18, 1 - distToDoor / (w * 0.45));
+        const entityReveal = Math.max(0.18, 1 - Math.hypot(fx - vx, fy - vy) / (w * 0.45));
+        hCtx.fillStyle = "rgba(0, 0, 0, 0.95)";
+        hCtx.beginPath(); hCtx.ellipse(vx, dy + doorH * 0.52, doorW * 0.24, doorH * 0.36, 0, 0, Math.PI * 2); hCtx.fill();
+        hCtx.beginPath(); hCtx.arc(vx, dy + doorH * 0.24, doorW * 0.14, 0, Math.PI * 2); hCtx.fill();
 
-        // Silhouette torso & head
-        hCtx.fillStyle = `rgba(0, 0, 0, 0.95)`;
-        hCtx.beginPath();
-        hCtx.ellipse(vx, dy + doorH * 0.52, doorW * 0.24, doorH * 0.36, 0, 0, Math.PI * 2);
-        hCtx.fill();
-        hCtx.beginPath();
-        hCtx.arc(vx, dy + doorH * 0.24, doorW * 0.14, 0, Math.PI * 2);
-        hCtx.fill();
-
-        // Eerie glowing red eyes (occasional flicker/blink)
         const blink = Math.sin(time * 2.5) > 0.96 ? 0.1 : 1;
-        const eyeGlow = (0.45 + entityReveal * 0.55) * blink;
-        hCtx.fillStyle = `rgba(239, 68, 68, ${eyeGlow})`;
-        hCtx.shadowColor = "#ef4444";
-        hCtx.shadowBlur = 12;
-        hCtx.beginPath();
-        hCtx.arc(vx - 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2);
-        hCtx.arc(vx + 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2);
-        hCtx.fill();
+        hCtx.fillStyle = `rgba(239, 68, 68, ${(0.45 + entityReveal * 0.55) * blink})`;
+        hCtx.shadowColor = "#ef4444"; hCtx.shadowBlur = 12;
+        hCtx.beginPath(); hCtx.arc(vx - 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2); hCtx.arc(vx + 5, dy + doorH * 0.23, 2.1, 0, Math.PI * 2); hCtx.fill();
         hCtx.shadowBlur = 0;
 
-        // 5. Floating dust / fog particles inside beam
         for (let i = 0; i < 18; i++) {
-          const px = ((Math.sin(i * 73.1 + time * 0.4) * 0.5 + 0.5) * w);
-          const py = ((Math.cos(i * 41.7 + time * 0.3) * 0.5 + 0.5) * h);
+          const px = (Math.sin(i * 73.1 + time * 0.4) * 0.5 + 0.5) * w;
+          const py = (Math.cos(i * 41.7 + time * 0.3) * 0.5 + 0.5) * h;
           const d = Math.hypot(fx - px, fy - py);
           if (d < 130) {
             hCtx.fillStyle = `rgba(255, 220, 210, ${(1 - d / 130) * 0.38})`;
@@ -1972,26 +944,21 @@
           }
         }
 
-        // 6. Flashlight Cone Radial Mask + Darkness Vignette
-        const flicker = Math.random() > 0.985 ? 0.55 : 1; // Subtle horror bulb flicker
+        const flicker = Math.random() > 0.985 ? 0.55 : 1;
         const beamRadius = Math.max(w, h) * 0.38 * flicker;
         const grad = hCtx.createRadialGradient(fx, fy, 8, fx, fy, beamRadius);
         grad.addColorStop(0, "rgba(255, 235, 210, 0.22)");
         grad.addColorStop(0.35, "rgba(220, 60, 60, 0.08)");
         grad.addColorStop(0.75, "rgba(4, 2, 3, 0.72)");
         grad.addColorStop(1, "rgba(2, 1, 2, 0.96)");
-
         hCtx.fillStyle = grad;
         hCtx.fillRect(0, 0, w, h);
 
-        // 7. Occasional VHS glitch horizontal tear
         if (Math.random() > 0.96) {
-          const gy = Math.random() * h;
           hCtx.fillStyle = "rgba(239, 68, 68, 0.16)";
-          hCtx.fillRect(0, gy, w, 2 + Math.random() * 4);
+          hCtx.fillRect(0, Math.random() * h, w, 2 + Math.random() * 4);
         }
 
-        // 8. Live Oscilloscope Signal Waveform
         wCtx.clearRect(0, 0, wCanvas.width, wCanvas.height);
         wCtx.strokeStyle = "#ef4444";
         wCtx.lineWidth = 1.5;
@@ -1999,8 +966,7 @@
         const chaos = isHovering ? 11 : 6;
         for (let x = 0; x < wCanvas.width; x += 3) {
           const y = 18 + Math.sin(x * 0.18 + time * 6) * (Math.random() * chaos);
-          if (x === 0) wCtx.moveTo(x, y);
-          else wCtx.lineTo(x, y);
+          if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
         }
         wCtx.stroke();
 
@@ -2009,14 +975,8 @@
       renderHorrorScene();
     })();
 
-    /* =========================================
-       3. THREE.JS 3D ORBITAL BACKGROUND
-       ========================================= */
     const canvas = document.getElementById("orbital-canvas");
-    let autoSpin = true;
-    let pulseImpulse = 0;
-    let mouseX = 0;
-    let mouseY = 0;
+    let autoSpin = true, pulseImpulse = 0, mouseX = 0, mouseY = 0;
 
     window.addEventListener("mousemove", e => {
       mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -2024,103 +984,91 @@
     });
 
     function init3DOrbital() {
-      if (typeof THREE !== "undefined") {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.z = 6.2;
+      if (typeof THREE === "undefined") return;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.z = 6.2;
 
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        const orbitalGroup = new THREE.Group();
-        scene.add(orbitalGroup);
+      const orbitalGroup = new THREE.Group();
+      scene.add(orbitalGroup);
 
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.45 });
-        const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 1), coreMat);
-        orbitalGroup.add(coreMesh);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.45 });
+      const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 1), coreMat);
+      orbitalGroup.add(coreMesh);
 
-        const innerMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, transparent: true, opacity: 0.55 });
-        const innerMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.65, 0), innerMat);
-        orbitalGroup.add(innerMesh);
+      const innerMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, transparent: true, opacity: 0.55 });
+      const innerMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.65, 0), innerMat);
+      orbitalGroup.add(innerMesh);
 
-        const rings = [];
-        [
-          { r: 2.1, rx: 1.1, ry: 0.3, c: 0x38bdf8, o: 0.45 },
-          { r: 2.65, rx: -0.8, ry: 0.9, c: 0x94a3b8, o: 0.25 },
-          { r: 3.15, rx: 0.4, ry: -1.1, c: 0xa855f7, o: 0.32 }
-        ].forEach(cfg => {
-          const mat = new THREE.MeshBasicMaterial({ color: cfg.c, transparent: true, opacity: cfg.o });
-          const mesh = new THREE.Mesh(new THREE.TorusGeometry(cfg.r, 0.01, 12, 120), mat);
-          mesh.rotation.x = cfg.rx;
-          mesh.rotation.y = cfg.ry;
-          orbitalGroup.add(mesh);
-          rings.push({ mesh, mat });
-        });
+      const rings = [
+        { r: 2.1, rx: 1.1, ry: 0.3, c: 0x38bdf8, o: 0.45 },
+        { r: 2.65, rx: -0.8, ry: 0.9, c: 0x94a3b8, o: 0.25 },
+        { r: 3.15, rx: 0.4, ry: -1.1, c: 0xa855f7, o: 0.32 }
+      ].map(cfg => {
+        const mat = new THREE.MeshBasicMaterial({ color: cfg.c, transparent: true, opacity: cfg.o });
+        const mesh = new THREE.Mesh(new THREE.TorusGeometry(cfg.r, 0.01, 12, 120), mat);
+        mesh.rotation.x = cfg.rx; mesh.rotation.y = cfg.ry;
+        orbitalGroup.add(mesh);
+        return { mesh, mat };
+      });
 
-        const pCount = 1000;
-        const pos = new Float32Array(pCount * 3);
-        for (let i = 0; i < pCount; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const d = 2.2 + Math.random() * 5.5;
-          pos[i * 3] = Math.cos(a) * d;
-          pos[i * 3 + 1] = (Math.random() - 0.5) * 4.5;
-          pos[i * 3 + 2] = Math.sin(a) * d;
-        }
-        const pGeo = new THREE.BufferGeometry();
-        pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-        const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xcbd5e1, size: 0.025, transparent: true, opacity: 0.6 }));
-        scene.add(particles);
-
-        window.addEventListener("resize", () => {
-          camera.aspect = window.innerWidth / window.innerHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        function animate() {
-          requestAnimationFrame(animate);
-          const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
-          const scrollProg = window.scrollY / maxScroll;
-          const isSignalMode = document.documentElement.getAttribute("data-mode") === "signal";
-
-          const c1 = isSignalMode ? 0xef4444 : 0x38bdf8;
-          const c2 = isSignalMode ? 0xf97316 : 0xa855f7;
-          coreMat.color.setHex(c1);
-          innerMat.color.setHex(c2);
-          rings[0].mat.color.setHex(c1);
-          rings[2].mat.color.setHex(c2);
-
-          const targetX = window.innerWidth > 900 ? Math.sin(scrollProg * Math.PI * 2) * 1.45 + 1.1 : 0;
-          orbitalGroup.position.x += (targetX - orbitalGroup.position.x) * 0.05;
-          orbitalGroup.position.y = Math.cos(scrollProg * Math.PI) * 0.35;
-
-          const s = 1 + pulseImpulse * 0.32 + Math.sin(scrollProg * Math.PI) * 0.14;
-          orbitalGroup.scale.set(s, s, s);
-          pulseImpulse *= 0.92;
-
-          if (autoSpin) {
-            coreMesh.rotation.y += isSignalMode ? 0.008 : 0.0035;
-            coreMesh.rotation.x += 0.002;
-            innerMesh.rotation.y -= 0.006;
-            rings[0].mesh.rotation.z += 0.004;
-            rings[1].mesh.rotation.x += 0.0025;
-            rings[2].mesh.rotation.y -= 0.003;
-            particles.rotation.y += 0.0008;
-          }
-
-          orbitalGroup.rotation.y += (mouseX * 0.45 + scrollProg * 3.2 - orbitalGroup.rotation.y) * 0.04;
-          orbitalGroup.rotation.x += (mouseY * 0.35 - orbitalGroup.rotation.x) * 0.04;
-          renderer.render(scene, camera);
-        }
-        animate();
+      const pCount = 1000, pos = new Float32Array(pCount * 3);
+      for (let i = 0; i < pCount; i++) {
+        const a = Math.random() * Math.PI * 2, d = 2.2 + Math.random() * 5.5;
+        pos[i * 3] = Math.cos(a) * d; pos[i * 3 + 1] = (Math.random() - 0.5) * 4.5; pos[i * 3 + 2] = Math.sin(a) * d;
       }
+      const pGeo = new THREE.BufferGeometry();
+      pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xcbd5e1, size: 0.025, transparent: true, opacity: 0.6 }));
+      scene.add(particles);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
+        const scrollProg = window.scrollY / maxScroll;
+        const isSignalMode = document.documentElement.getAttribute("data-mode") === "signal";
+
+        const c1 = isSignalMode ? 0xef4444 : 0x38bdf8;
+        const c2 = isSignalMode ? 0xf97316 : 0xa855f7;
+        coreMat.color.setHex(c1); innerMat.color.setHex(c2);
+        rings[0].mat.color.setHex(c1); rings[2].mat.color.setHex(c2);
+
+        const targetX = window.innerWidth > 900 ? Math.sin(scrollProg * Math.PI * 2) * 1.45 + 1.1 : 0;
+        orbitalGroup.position.x += (targetX - orbitalGroup.position.x) * 0.05;
+        orbitalGroup.position.y = Math.cos(scrollProg * Math.PI) * 0.35;
+
+        const s = 1 + pulseImpulse * 0.32 + Math.sin(scrollProg * Math.PI) * 0.14;
+        orbitalGroup.scale.set(s, s, s);
+        pulseImpulse *= 0.92;
+
+        if (autoSpin) {
+          coreMesh.rotation.y += isSignalMode ? 0.008 : 0.0035;
+          coreMesh.rotation.x += 0.002;
+          innerMesh.rotation.y -= 0.006;
+          rings[0].mesh.rotation.z += 0.004;
+          rings[1].mesh.rotation.x += 0.0025;
+          rings[2].mesh.rotation.y -= 0.003;
+          particles.rotation.y += 0.0008;
+        }
+
+        orbitalGroup.rotation.y += (mouseX * 0.45 + scrollProg * 3.2 - orbitalGroup.rotation.y) * 0.04;
+        orbitalGroup.rotation.x += (mouseY * 0.35 - orbitalGroup.rotation.x) * 0.04;
+        renderer.render(scene, camera);
+      }
+      animate();
     }
     init3DOrbital();
 
-    /* =========================================
-       4. MODE SWITCH, SCRAMBLE, FILTER & MODAL
-       ========================================= */
     const modeToggle = document.getElementById("modeToggle");
     const modeLabel = document.getElementById("modeLabel");
     const btnSignalShortcut = document.getElementById("btnSignalShortcut");
@@ -2129,8 +1077,7 @@
 
     function toggleSignalMode() {
       const root = document.documentElement;
-      const isSignal = root.getAttribute("data-mode") === "signal";
-      const next = isSignal ? "orbital" : "signal";
+      const next = root.getAttribute("data-mode") === "signal" ? "orbital" : "signal";
       root.setAttribute("data-mode", next);
       modeLabel.textContent = next === "signal" ? "NULL SIGNAL" : "ORBITAL MODE";
       pulseImpulse = 0.8;
@@ -2147,10 +1094,10 @@
     btnPulseOrb.addEventListener("click", () => { pulseImpulse = 1; });
 
     const roles = [
-      "> GAME DEVELOPER & DESIGNER_",
+      "> GAME DESIGNER & UE5 DEVELOPER_",
       "> CREATOR OF NULL SIGNAL (HORROR)_",
       "> FRONTEND DEVELOPER (EX-RUHYAA)_",
-      "> BACHELOR'S IN IT STUDENT_"
+      "> B.SC. IN IT UNDERGRADUATE_"
     ];
     const scrambleEl = document.getElementById("scrambleRole");
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#*";
@@ -2165,14 +1112,10 @@
           (idx < iter || ch === " ") ? text[idx] : chars[Math.floor(Math.random() * chars.length)]
         ).join("");
         iter += 1.2;
-        if (iter >= text.length) {
-          scrambleEl.textContent = text;
-          clearInterval(interval);
-        }
+        if (iter >= text.length) { scrambleEl.textContent = text; clearInterval(interval); }
       }, 28);
     }, 3600);
 
-    // Project Filters
     const filterButtons = document.querySelectorAll("[data-filter]");
     filterButtons.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2185,7 +1128,6 @@
       });
     });
 
-    // Modal
     const modal = document.getElementById("projectModal");
     window.openDossier = function(id) {
       const p = dossierData[id];
@@ -2211,14 +1153,13 @@
     modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
-    // Skills Tabs
     const skillsGrid = document.getElementById("skillsGrid");
     const skillTabs = document.querySelectorAll("[data-skill-tab]");
     function renderSkills(tabKey) {
       skillsGrid.innerHTML = skillsData[tabKey].map(s => `
         <div class="skill-node">
-          <div class="skill-top"><span>${s.name}</span><span class="skill-pct">${s.level}%</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width: ${s.level}%"></div></div>
+          <div class="skill-top">${s.name}</div>
+          <p class="skill-note">${s.note}</p>
         </div>
       `).join("");
     }
@@ -2232,7 +1173,6 @@
       });
     });
 
-    // Cursor glow, scroll telemetry, mobile menu, toast & form
     const cursorGlow = document.getElementById("cursorGlow");
     window.addEventListener("mousemove", e => {
       cursorGlow.style.left = `${e.clientX}px`;
@@ -2278,8 +1218,8 @@
     }
 
     document.getElementById("copyEmailBtn").addEventListener("click", () => {
-      navigator.clipboard?.writeText("tiwarikrish0020@gmail.com");
-      showToast("✓ Copied tiwarikrish0020@gmail.com to clipboard");
+      navigator.clipboard?.writeText(CONTACT_EMAIL);
+      showToast(`✓ Copied ${CONTACT_EMAIL} to clipboard`);
     });
 
     document.getElementById("contactForm").addEventListener("submit", e => {
@@ -2287,7 +1227,7 @@
       const name = document.getElementById("senderName").value.trim();
       const email = document.getElementById("senderEmail").value.trim();
       const msg = document.getElementById("senderMsg").value.trim();
-      window.location.href = `mailto:tiwarikrish0020@gmail.com?subject=${encodeURIComponent(`Portfolio Inquiry from ${name}`)}&body=${encodeURIComponent(`From: ${name} (${email})\n\n${msg}`)}`;
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Portfolio Inquiry from ${name}`)}&body=${encodeURIComponent(`From: ${name} (${email})\n\n${msg}`)}`;
       e.target.reset();
       showToast("✓ Opening your email client!");
     });
